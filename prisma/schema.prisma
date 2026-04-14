@@ -1,7 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// bubblealba.com 클론 — 전체 데이터 모델
+// SQLite + NextAuth v5 + 전체 비즈니스 로직
 
 generator client {
   provider = "prisma-client"
@@ -9,5 +7,534 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+}
+
+// ========== Auth ==========
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // bcrypt 해시 (credentials 로그인용)
+
+  nickname      String?   @unique
+  phone         String?
+  phoneVerified Boolean   @default(false)
+  isAdult       Boolean   @default(false)
+  region        String?
+  points        Int       @default(0)
+  role          Role      @default(USER)
+
+  accounts      Account[]
+  sessions      Session[]
+  jobs          Job[]
+  posts         CommunityPost[]
+  comments      Comment[]
+  favorites     Favorite[]
+  scraps        Scrap[]
+  applications  JobApplication[]
+  notifications Notification[]
+  reports       Report[]        @relation("reporter")
+  boards        Board[]         @relation("boardCreator")
+  advertiserProfile AdvertiserProfile?
+  adOrders      AdOrder[]
+  realEstateListings RealEstateListing[] @relation("realEstateListings")
+  bannerAds     BannerAd[]         @relation("bannerAds")
+  adBids        AdBid[]            @relation("adBids")
+  choiceTalkRooms    ChoiceTalkRoom[]    @relation("choiceTalkOwner")
+  choiceTalkMessages ChoiceTalkMessage[] @relation("choiceTalkAuthor")
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Role {
+  USER
+  ADVERTISER
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PhoneVerification {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  verified  Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone, code])
+}
+
+// ========== Jobs ==========
+
+model Job {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  wage        String
+  region      String
+  city        String
+  category    String
+  company     String
+  images      String   @default("[]") // JSON array
+  tags        String   @default("[]") // JSON array
+  status      JobStatus @default(ACTIVE)
+  views       Int      @default(0)
+
+  isPromoted   Boolean  @default(false)
+  displayOrder Int      @default(0) // 낮을수록 상단 (관리자 조정)
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  applications JobApplication[]
+  favorites   Favorite[]
+  adOrders    AdOrder[]
+  adBids      AdBid[]  @relation("jobBids")
+  choiceTalkRooms ChoiceTalkRoom[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([region, city])
+  @@index([category])
+}
+
+enum JobStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  CLOSED
+}
+
+model JobApplication {
+  id        String            @id @default(cuid())
+  userId    String
+  jobId     String
+  status    ApplicationStatus @default(PENDING)
+  message   String?
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+}
+
+enum ApplicationStatus {
+  PENDING
+  VIEWED
+  ACCEPTED
+  REJECTED
+}
+
+// ========== Community ==========
+
+model Board {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  isActive    Boolean @default(true)
+  order       Int     @default(0)
+
+  createdById String
+  createdBy   User    @relation("boardCreator", fields: [createdById], references: [id])
+  posts       CommunityPost[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CommunityPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  images    String   @default("[]") // JSON array
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id])
+  comments  Comment[]
+  scraps    Scrap[]
+
+  views     Int      @default(0)
+  likes     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([boardId])
+}
+
+model Comment {
+  id       String @id @default(cuid())
+  content  String
+
+  authorId String
+  author   User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId   String
+  post     CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  likes    Int    @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+// ========== User Actions ==========
+
+model Favorite {
+  id     String @id @default(cuid())
+  userId String
+  jobId  String
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobId])
+}
+
+model Scrap {
+  id     String @id @default(cuid())
+  userId String
+  postId String
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post   CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+// ========== Notifications ==========
+
+model Notification {
+  id     String           @id @default(cuid())
+  type   NotificationType
+  title  String
+  body   String
+  read   Boolean          @default(false)
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+enum NotificationType {
+  APPLY
+  MESSAGE
+  SYSTEM
+  LIKE
+}
+
+// ========== Reports ==========
+
+model Report {
+  id          String       @id @default(cuid())
+  type        ReportType
+  targetId    String
+  targetTitle String
+  reason      String
+  status      ReportStatus @default(PENDING)
+
+  reporterId  String
+  reporter    User @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([reporterId])
+  @@index([status])
+}
+
+enum ReportType {
+  JOB
+  POST
+  USER
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+// ========== Ad System ==========
+
+model AdPackage {
+  id           String   @id @default(cuid())
+  name         String
+  durationDays Int
+  price        Int
+  tier         String   // "basic", "standard", "premium"
+  description  String?
+  isActive     Boolean  @default(true)
+
+  orders       AdOrder[]
+  bids         AdBid[]  @relation("packageBids")
+
+  createdAt    DateTime @default(now())
+}
+
+model AdvertiserProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  businessName   String
+  businessNumber String
+  representative String
+  phone          String
+  address        String?
+  verified       Boolean  @default(false)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model AdOrder {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId     String
+  package       AdPackage   @relation(fields: [packageId], references: [id])
+  jobId         String?
+  job           Job?        @relation(fields: [jobId], references: [id])
+
+  amount        Int
+  status        OrderStatus @default(PENDING)
+  startDate     DateTime
+  endDate       DateTime
+  paymentMethod String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([jobId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+// ========== Real Estate Listings (부동산 매물) ==========
+
+model RealEstateListing {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  price       String                // "월세 50/500", "매매 3억" 등 자유형식
+  priceType   String   @default("월세") // 월세, 전세, 매매
+  deposit     String?               // 보증금
+  area        String?               // 면적 (평/㎡)
+  rooms       String?               // 방/욕실 ("2룸 1욕실")
+  floor       String?               // 층수
+  images      String   @default("[]") // JSON array of image URLs
+  region      String                // 시/도
+  city        String                // 시/군/구
+  address     String?               // 상세주소
+  category    RealEstateCategory @default(ONEROOM)
+  status      RealEstateStatus   @default(ACTIVE)
+
+  authorId    String
+  author      User     @relation("realEstateListings", fields: [authorId], references: [id], onDelete: Cascade)
+
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([region, city])
+  @@index([category])
+  @@index([status])
+  @@index([authorId])
+}
+
+enum RealEstateCategory {
+  ONEROOM     // 원룸
+  TWOROOM     // 투룸
+  THREEROOM   // 쓰리룸
+  OFFICETEL   // 오피스텔
+  APT         // 아파트
+  VILLA       // 빌라/다세대
+  STORE       // 상가/사무실
+  ETC         // 기타
+}
+
+enum RealEstateStatus {
+  ACTIVE      // 매물 등록중
+  RESERVED    // 예약중
+  CLOSED      // 거래완료
+}
+
+// ========== Banner Ads (사진광고 + 텍스트롤링) ==========
+
+model BannerAd {
+  id          String     @id @default(cuid())
+  type        BannerType // IMAGE_TOP | IMAGE_MID | IMAGE_BOT | TEXT_ROLLING
+  title       String?    // 배너 제목
+  imageUrl    String?    // 사진광고용
+  linkUrl     String?    // 외부 링크 (없으면 상세페이지로)
+  text        String?    // 텍스트 롤링용 / 상세 설명
+  description String?    // 상세 내용
+  phone       String?    // 연락처
+  address     String?    // 주소
+  order       Int        @default(0)
+  isActive    Boolean    @default(true)
+
+  userId    String
+  user      User       @relation("bannerAds", fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([type, isActive, order])
+  @@index([userId])
+}
+
+enum BannerType {
+  IMAGE_TOP      // 최상단 2개 (큰 배너)
+  IMAGE_MID      // 두번째줄 3개
+  IMAGE_BOT      // 세번째줄 4개
+  TEXT_ROLLING   // 텍스트 롤링
+  PETS_SHOP      // 애견샵 배너
+  LEGAL_AD       // 법률상담 배너
+  BEAUTY_SALON   // 미용실 배너
+  BEAUTY_NAIL    // 네일아트 배너
+  BEAUTY_SURGERY // 성형 배너
+}
+
+// ========== Ad Bidding ==========
+
+model AdBid {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("adBids", fields: [userId], references: [id], onDelete: Cascade)
+  jobId       String
+  job         Job       @relation("jobBids", fields: [jobId], references: [id], onDelete: Cascade)
+  packageId   String?
+  package     AdPackage? @relation("packageBids", fields: [packageId], references: [id])
+
+  bidAmount   Int       // 입찰 금액
+  totalAmount Int       // 패키지 + 입찰 합계
+  payMethod   String    @default("POINT") // POINT | ADMIN_APPROVE
+  status      BidStatus @default(PENDING)
+
+  startDate   DateTime?
+  endDate     DateTime?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([jobId])
+  @@index([status])
+}
+
+enum BidStatus {
+  PENDING       // 관리자 승인 대기
+  APPROVED      // 승인 (노출 중)
+  REJECTED      // 거절
+  EXPIRED       // 만료
+}
+
+// ========== ChoiceTalk ==========
+
+model ChoiceTalkRoom {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  logo          String?
+  description   String?
+  roomCount     Int      @default(0)
+  memberCount   Int      @default(0)
+  isActive      Boolean  @default(true)
+
+  jobId         String?
+  job           Job?     @relation(fields: [jobId], references: [id])
+  ownerId       String
+  owner         User     @relation("choiceTalkOwner", fields: [ownerId], references: [id])
+  messages      ChoiceTalkMessage[]
+
+  lastMessageAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([lastMessageAt])
+}
+
+model ChoiceTalkMessage {
+  id        String   @id @default(cuid())
+  content   String
+  roomId    String
+  room      ChoiceTalkRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("choiceTalkAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([roomId, createdAt])
+  @@index([authorId])
 }
