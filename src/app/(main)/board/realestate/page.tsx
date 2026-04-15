@@ -1,5 +1,6 @@
 /** 부동산 게시판 — 배너 + 매물 리스트 + 지역검색 + 게시판 */
 import Link from "next/link";
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { getListings } from "@/lib/actions/realestate";
 import { RealEstateTabs } from "./RealEstateTabs";
@@ -73,7 +74,7 @@ export default async function RealEstateBoardPage({
       {currentTab === "listing" && (
         <>
           {/* 지역검색 */}
-          <ListingSearch />
+          <Suspense><ListingSearch /></Suspense>
 
           {/* 매물 리스트 */}
           <ul className="mt-4px">

@@ -1,7 +1,7 @@
 /** 미용 글쓰기 — 카테고리(미용실/네일/성형) + 사진 첨부 */
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createPost } from "@/lib/actions/posts";
 
@@ -12,6 +12,14 @@ const CATEGORIES = [
 ];
 
 export default function BeautyWritePage() {
+  return (
+    <Suspense fallback={<div className="p-15px font-14rg text-font-disabled">로딩 중...</div>}>
+      <BeautyWriteContent />
+    </Suspense>
+  );
+}
+
+function BeautyWriteContent() {
   const router = useRouter();
   const params = useSearchParams();
   const initCat = params.get("category") ?? "salon";
