@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /** 초이스톡 목록 — 업소별 톡방 카드 리스트 */
 import Link from "next/link";
 import { getChoiceTalkRooms } from "@/lib/actions/choicetalk";

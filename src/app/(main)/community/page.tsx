@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Eye, Heart, MessageSquare, Edit3 } from "lucide-react";
 import { getPosts } from "@/lib/actions/posts";

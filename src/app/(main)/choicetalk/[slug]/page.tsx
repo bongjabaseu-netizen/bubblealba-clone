@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 /** 초이스톡 톡방 — 채팅 UI */
 import { notFound } from "next/navigation";
 import Link from "next/link";

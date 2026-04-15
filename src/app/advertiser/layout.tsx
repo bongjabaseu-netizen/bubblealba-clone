@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AdvertiserSidebar } from "./AdvertiserSidebar";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdvertiserLayout({
   children,
 }: {
