@@ -10,9 +10,14 @@ const advertiserPaths = ["/advertiser"];
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Vercel Production에서는 Secure prefix 쿠키 사용
+  const isProduction = process.env.NODE_ENV === "production";
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
+    secureCookie: isProduction,
+    salt: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
+    cookieName: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
   });
 
   // 관리자 페이지 — ADMIN만
