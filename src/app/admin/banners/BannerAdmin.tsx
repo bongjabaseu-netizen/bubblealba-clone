@@ -4,6 +4,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { adminCreateBanner, adminToggleBanner, adminDeleteBanner } from "@/lib/actions/banners";
+import { ImageUploader } from "@/components/ImageUploader";
 
 const BANNER_TYPES = [
   { value: "IMAGE_TOP", label: "홈 최상단 (2개, 600x300)", desc: "홈 상단 큰 가로 배너. 권장 600x300px. 2개까지." },
@@ -34,6 +35,7 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
   const [selectedType, setSelectedType] = useState("IMAGE_TOP");
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("ALL");
+  const [imageUrl, setImageUrl] = useState("");
 
   const filtered = filter === "ALL" ? banners : banners.filter(b => b.type === filter);
   const typeInfo = BANNER_TYPES.find(t => t.value === selectedType);
@@ -42,11 +44,12 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
     e.preventDefault();
     setError("");
     const formData = new FormData(e.currentTarget);
+    formData.set("imageUrl", imageUrl);
     const form = e.currentTarget;
     startTransition(async () => {
       const result = await adminCreateBanner(formData);
       if (result?.error) setError(result.error);
-      else { form.reset(); setShowForm(false); router.refresh(); }
+      else { form.reset(); setImageUrl(""); setShowForm(false); router.refresh(); }
     });
   }
 
@@ -111,8 +114,12 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
 
           {selectedType !== "TEXT_ROLLING" && (
             <div>
-              <label className="text-sm text-slate-600">이미지 URL *</label>
-              <input name="imageUrl" required className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
+              <ImageUploader
+                value={imageUrl}
+                onChange={setImageUrl}
+                folder="banners"
+                label="이미지 * (파일 업로드)"
+              />
             </div>
           )}
 

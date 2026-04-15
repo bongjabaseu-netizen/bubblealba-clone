@@ -49,6 +49,8 @@ export async function adminCreateBanner(formData: FormData) {
   const order = parseInt(formData.get("order") as string) || 0;
 
   if (!type) return { error: "배너 타입을 선택해주세요" };
+  if (type !== "TEXT_ROLLING" && !imageUrl) return { error: "이미지를 업로드해주세요" };
+  if (type === "TEXT_ROLLING" && !text) return { error: "텍스트를 입력해주세요" };
 
   await prisma.bannerAd.create({
     data: {
