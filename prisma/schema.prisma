@@ -1,5 +1,5 @@
 // bubblealba.com 클론 — 전체 데이터 모델
-// SQLite + NextAuth v5 + 전체 비즈니스 로직
+// PostgreSQL (Vercel Postgres) + NextAuth v5 + 전체 비즈니스 로직
 
 generator client {
   provider = "prisma-client"
@@ -7,7 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ========== Auth ==========

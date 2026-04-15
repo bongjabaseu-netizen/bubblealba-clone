@@ -1,17 +1,17 @@
 /**
  * Prisma 클라이언트 싱글톤 — Next.js dev HMR 대응
- * SQLite + better-sqlite3 adapter (Prisma 7)
+ * PostgreSQL + pg adapter (Prisma 7)
  */
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
 function createPrismaClient() {
-  const adapter = new PrismaBetterSqlite3({
-    url: "file:./prisma/dev.db",
+  const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL!,
   });
   return new PrismaClient({
     adapter,
