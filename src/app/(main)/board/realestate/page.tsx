@@ -1,4 +1,5 @@
 /** 부동산 게시판 — 배너 + 매물 리스트 + 지역검색 + 게시판 */
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";

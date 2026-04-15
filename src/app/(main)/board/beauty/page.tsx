@@ -1,4 +1,5 @@
 /** 미용 게시판 — 탭(미용실/네일아트/성형) + 탭별 배너 + 글 목록 */
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getBannerAds } from "@/lib/actions/banners";

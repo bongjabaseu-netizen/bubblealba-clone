@@ -1,4 +1,5 @@
 /** 법률상담 게시판 — 이미지 배너 + 글 목록 + 사진 첨부 */
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getBannerAds } from "@/lib/actions/banners";

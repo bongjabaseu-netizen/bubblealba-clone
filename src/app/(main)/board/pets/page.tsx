@@ -1,4 +1,5 @@
 /** 애견자랑 게시판 — 사진 갤러리 형태 + 글 작성 */
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getBannerAds } from "@/lib/actions/banners";
