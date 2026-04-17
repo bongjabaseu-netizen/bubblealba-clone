@@ -65,6 +65,9 @@ function safeJsonParse<T>(val: unknown, fallback: T): T {
   return fallback;
 }
 
+type SortKey = "title" | "company" | "region" | "status" | "views" | "createdAt";
+type SortDir = "asc" | "desc";
+
 export function AdminJobTable({ jobs: initialJobs }: { jobs: Job[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -73,13 +76,43 @@ export function AdminJobTable({ jobs: initialJobs }: { jobs: Job[] }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [jobs, setJobs] = useState(initialJobs);
   const [editJob, setEditJob] = useState<Job | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("createdAt");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   // router.refresh() 후 새 데이터 반영
   useEffect(() => { setJobs(initialJobs); }, [initialJobs]);
 
-  const filtered = statusFilter === "ALL"
+  function handleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const statusFiltered = statusFilter === "ALL"
     ? jobs
     : jobs.filter((j) => j.status === statusFilter);
+
+  const filtered = [...statusFiltered].sort((a, b) => {
+    let valA: string | number = "";
+    let valB: string | number = "";
+    switch (sortKey) {
+      case "title": valA = a.title; valB = b.title; break;
+      case "company": valA = a.company ?? ""; valB = b.company ?? ""; break;
+      case "region": valA = `${a.region ?? ""} ${a.city ?? ""}`; valB = `${b.region ?? ""} ${b.city ?? ""}`; break;
+      case "status": valA = a.status; valB = b.status; break;
+      case "views": valA = a.views; valB = b.views; break;
+      case "createdAt": valA = new Date(a.createdAt).getTime(); valB = new Date(b.createdAt).getTime(); break;
+    }
+    if (typeof valA === "number" && typeof valB === "number") {
+      return sortDir === "asc" ? valA - valB : valB - valA;
+    }
+    return sortDir === "asc"
+      ? String(valA).localeCompare(String(valB), "ko")
+      : String(valB).localeCompare(String(valA), "ko");
+  });
 
   function handleSearch(value: string) {
     setQuery(value);
@@ -146,12 +179,12 @@ export function AdminJobTable({ jobs: initialJobs }: { jobs: Job[] }) {
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
               <th className="text-left px-4 py-3 font-medium text-slate-600">이미지</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">제목</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">회사</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">지역</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">상태</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">조회수</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">등록일</th>
+              <SortTh label="제목" sortKey="title" currentKey={sortKey} dir={sortDir} onClick={handleSort} />
+              <SortTh label="회사" sortKey="company" currentKey={sortKey} dir={sortDir} onClick={handleSort} />
+              <SortTh label="지역" sortKey="region" currentKey={sortKey} dir={sortDir} onClick={handleSort} />
+              <SortTh label="상태" sortKey="status" currentKey={sortKey} dir={sortDir} onClick={handleSort} />
+              <SortTh label="조회수" sortKey="views" currentKey={sortKey} dir={sortDir} onClick={handleSort} />
+              <SortTh label="등록일" sortKey="createdAt" currentKey={sortKey} dir={sortDir} onClick={handleSort} />
               <th className="text-left px-4 py-3 font-medium text-slate-600">작업</th>
             </tr>
           </thead>
@@ -376,5 +409,25 @@ function EditJobModal({ job, onClose, onSaved }: { job: Job; onClose: () => void
         </form>
       </div>
     </div>
+  );
+}
+
+/** 정렬 가능한 테이블 헤더 */
+function SortTh({ label, sortKey, currentKey, dir, onClick }: {
+  label: string; sortKey: SortKey; currentKey: SortKey; dir: SortDir; onClick: (key: SortKey) => void;
+}) {
+  const isActive = currentKey === sortKey;
+  return (
+    <th
+      className="text-left px-4 py-3 font-medium text-slate-600 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+      onClick={() => onClick(sortKey)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        <span className={`text-[10px] ${isActive ? "text-blue-600" : "text-slate-300"}`}>
+          {isActive ? (dir === "asc" ? "▲" : "▼") : "⇅"}
+        </span>
+      </span>
+    </th>
   );
 }
