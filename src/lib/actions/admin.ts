@@ -275,6 +275,47 @@ export async function toggleJobPromoted(jobId: string) {
   return { success: true };
 }
 
+// ========== 광고 편집 ==========
+
+export async function getJobDetail(jobId: string) {
+  await requireAdmin();
+  return prisma.job.findUnique({
+    where: { id: jobId },
+    include: { author: { select: { nickname: true } } },
+  });
+}
+
+export async function updateJob(jobId: string, formData: FormData) {
+  await requireAdmin();
+  const title = formData.get("title") as string;
+  const company = formData.get("company") as string;
+  const wage = formData.get("wage") as string;
+  const region = formData.get("region") as string;
+  const city = formData.get("city") as string;
+  const category = formData.get("category") as string;
+  const description = formData.get("description") as string;
+  const images = formData.get("images") as string; // JSON string
+  const tags = formData.get("tags") as string; // JSON string
+
+  await prisma.job.update({
+    where: { id: jobId },
+    data: {
+      ...(title && { title }),
+      ...(company && { company }),
+      ...(wage && { wage }),
+      ...(region && { region }),
+      ...(city && { city }),
+      ...(category && { category }),
+      ...(description && { description }),
+      ...(images && { images }),
+      ...(tags && { tags }),
+    },
+  });
+
+  revalidatePath("/admin/jobs");
+  return { success: true };
+}
+
 export async function deleteBoard(boardId: string) {
   await requireAdmin();
   const postCount = await prisma.communityPost.count({ where: { boardId } });

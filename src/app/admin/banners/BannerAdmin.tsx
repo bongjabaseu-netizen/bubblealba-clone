@@ -1,9 +1,9 @@
-/** 관리자 배너 — 생성/토글/삭제 + 사이즈 안내 */
+/** 관리자 배너 — 생성/편집/토글/삭제 + 사이즈 안내 */
 "use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { adminCreateBanner, adminToggleBanner, adminDeleteBanner } from "@/lib/actions/banners";
+import { adminCreateBanner, adminToggleBanner, adminDeleteBanner, adminUpdateBanner } from "@/lib/actions/banners";
 import { ImageUploader } from "@/components/ImageUploader";
 
 const BANNER_TYPES = [
@@ -36,6 +36,7 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("ALL");
   const [imageUrl, setImageUrl] = useState("");
+  const [editBanner, setEditBanner] = useState<Banner | null>(null);
 
   const filtered = filter === "ALL" ? banners : banners.filter(b => b.type === filter);
   const typeInfo = BANNER_TYPES.find(t => t.value === selectedType);
@@ -89,75 +90,16 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
 
       {/* 등록 폼 */}
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
-          <h2 className="font-semibold text-slate-900">새 배너 등록</h2>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <div>
-            <label className="text-sm text-slate-600">배너 타입 *</label>
-            <select name="type" value={selectedType} onChange={e => setSelectedType(e.target.value)} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
-              {BANNER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
-            <p className="text-xs text-slate-400 mt-1">{typeInfo?.desc}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm text-slate-600">제목</label>
-              <input name="title" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="배너 제목" />
-            </div>
-            <div>
-              <label className="text-sm text-slate-600">순서</label>
-              <input name="order" type="number" defaultValue={0} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
-            </div>
-          </div>
-
-          {selectedType !== "TEXT_ROLLING" && (
-            <div>
-              <ImageUploader
-                value={imageUrl}
-                onChange={setImageUrl}
-                folder="banners"
-                label="이미지 * (파일 업로드)"
-              />
-            </div>
-          )}
-
-          {selectedType === "TEXT_ROLLING" && (
-            <div>
-              <label className="text-sm text-slate-600">롤링 텍스트 *</label>
-              <input name="text" required className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="광고 텍스트" />
-            </div>
-          )}
-
-          <div>
-            <label className="text-sm text-slate-600">외부 링크 URL (비우면 상세페이지로)</label>
-            <input name="linkUrl" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
-          </div>
-
-          {selectedType !== "TEXT_ROLLING" && (
-            <>
-              <div>
-                <label className="text-sm text-slate-600">상세 설명</label>
-                <textarea name="description" rows={3} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="배너 클릭 시 보이는 상세 내용" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm text-slate-600">전화번호</label>
-                  <input name="phone" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="02-1234-5678" />
-                </div>
-                <div>
-                  <label className="text-sm text-slate-600">주소</label>
-                  <input name="address" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="서울 강남구 ..." />
-                </div>
-              </div>
-            </>
-          )}
-
-          <button type="submit" disabled={isPending} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-            {isPending ? "등록 중..." : "배너 등록"}
-          </button>
-        </form>
+        <BannerForm
+          selectedType={selectedType}
+          setSelectedType={setSelectedType}
+          typeInfo={typeInfo}
+          imageUrl={imageUrl}
+          setImageUrl={setImageUrl}
+          error={error}
+          isPending={isPending}
+          onSubmit={handleCreate}
+        />
       )}
 
       {/* 필터 탭 */}
@@ -205,8 +147,12 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
                   </button>
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <button onClick={() => handleDelete(b.id, b.title)} disabled={isPending}
-                    className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100">삭제</button>
+                  <div className="flex items-center justify-center gap-1">
+                    <button onClick={() => setEditBanner(b)}
+                      className="px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100">편집</button>
+                    <button onClick={() => handleDelete(b.id, b.title)} disabled={isPending}
+                      className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100">삭제</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -215,6 +161,177 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* 편집 모달 */}
+      {editBanner && (
+        <EditBannerModal banner={editBanner} onClose={() => setEditBanner(null)} onSaved={() => { setEditBanner(null); router.refresh(); }} />
+      )}
+    </div>
+  );
+}
+
+/** 배너 등록 폼 (공통) */
+function BannerForm({ selectedType, setSelectedType, typeInfo, imageUrl, setImageUrl, error, isPending, onSubmit }: {
+  selectedType: string; setSelectedType: (v: string) => void;
+  typeInfo: typeof BANNER_TYPES[0] | undefined;
+  imageUrl: string; setImageUrl: (v: string) => void;
+  error: string; isPending: boolean;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <form onSubmit={onSubmit} className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
+      <h2 className="font-semibold text-slate-900">새 배너 등록</h2>
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      <div>
+        <label className="text-sm text-slate-600">배너 타입 *</label>
+        <select name="type" value={selectedType} onChange={e => setSelectedType(e.target.value)} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+          {BANNER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+        <p className="text-xs text-slate-400 mt-1">{typeInfo?.desc}</p>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-sm text-slate-600">제목</label>
+          <input name="title" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="배너 제목" />
+        </div>
+        <div>
+          <label className="text-sm text-slate-600">순서</label>
+          <input name="order" type="number" defaultValue={0} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+        </div>
+      </div>
+      {selectedType !== "TEXT_ROLLING" && (
+        <ImageUploader value={imageUrl} onChange={setImageUrl} folder="banners" label="이미지 * (파일 업로드)" />
+      )}
+      {selectedType === "TEXT_ROLLING" && (
+        <div>
+          <label className="text-sm text-slate-600">롤링 텍스트 *</label>
+          <input name="text" required className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="광고 텍스트" />
+        </div>
+      )}
+      <div>
+        <label className="text-sm text-slate-600">외부 링크 URL (비우면 상세페이지로)</label>
+        <input name="linkUrl" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
+      </div>
+      {selectedType !== "TEXT_ROLLING" && (
+        <>
+          <div>
+            <label className="text-sm text-slate-600">상세 설명</label>
+            <textarea name="description" rows={3} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="배너 클릭 시 보이는 상세 내용" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm text-slate-600">전화번호</label>
+              <input name="phone" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="02-1234-5678" />
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">주소</label>
+              <input name="address" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="서울 강남구 ..." />
+            </div>
+          </div>
+        </>
+      )}
+      <button type="submit" disabled={isPending} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+        {isPending ? "등록 중..." : "배너 등록"}
+      </button>
+    </form>
+  );
+}
+
+/** 배너 편집 모달 */
+function EditBannerModal({ banner, onClose, onSaved }: { banner: Banner; onClose: () => void; onSaved: () => void }) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState(banner.imageUrl ?? "");
+  const isTextRolling = banner.type === "TEXT_ROLLING";
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    const formData = new FormData(e.currentTarget);
+    if (!isTextRolling) formData.set("imageUrl", editImageUrl);
+
+    startTransition(async () => {
+      const result = await adminUpdateBanner(banner.id, formData);
+      if (result.success) onSaved();
+      else setError(result.error ?? "저장 실패");
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto m-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <h2 className="text-lg font-bold text-slate-900">배너 편집</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">&times;</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && <p className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+
+          <div>
+            <label className="text-sm font-medium text-slate-700">배너 타입</label>
+            <select name="type" defaultValue={banner.type} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+              {BANNER_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-slate-700">제목</label>
+              <input name="title" defaultValue={banner.title ?? ""} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-slate-700">순서</label>
+              <input name="order" type="number" defaultValue={banner.order} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
+          </div>
+
+          {!isTextRolling && (
+            <div>
+              <label className="text-sm font-medium text-slate-700 block mb-1">이미지</label>
+              <ImageUploader value={editImageUrl} onChange={setEditImageUrl} folder="banners" />
+            </div>
+          )}
+
+          {isTextRolling && (
+            <div>
+              <label className="text-sm font-medium text-slate-700">롤링 텍스트</label>
+              <input name="text" defaultValue={banner.text ?? ""} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-medium text-slate-700">외부 링크 URL</label>
+            <input name="linkUrl" defaultValue={banner.linkUrl ?? ""} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
+          </div>
+
+          {!isTextRolling && (
+            <>
+              <div>
+                <label className="text-sm font-medium text-slate-700">상세 설명</label>
+                <textarea name="description" defaultValue={banner.description ?? ""} rows={3} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">전화번호</label>
+                  <input name="phone" defaultValue={banner.phone ?? ""} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-700">주소</label>
+                  <input name="address" defaultValue={banner.address ?? ""} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">취소</button>
+            <button type="submit" disabled={isPending} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+              {isPending ? "저장 중..." : "저장"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -80,6 +80,28 @@ export async function adminDeleteBanner(id: string) {
   return { success: true };
 }
 
+/** 관리자: 배너 수정 */
+export async function adminUpdateBanner(id: string, formData: FormData) {
+  const session = await (await import("@/auth")).auth();
+  if ((session?.user as any)?.role !== "ADMIN") return { error: "권한 없음" };
+
+  const title = (formData.get("title") as string) || null;
+  const imageUrl = (formData.get("imageUrl") as string) || null;
+  const linkUrl = (formData.get("linkUrl") as string) || null;
+  const text = (formData.get("text") as string) || null;
+  const description = (formData.get("description") as string) || null;
+  const phone = (formData.get("phone") as string) || null;
+  const address = (formData.get("address") as string) || null;
+  const order = parseInt(formData.get("order") as string) || 0;
+  const type = formData.get("type") as string;
+
+  await prisma.bannerAd.update({
+    where: { id },
+    data: { title, imageUrl, linkUrl, text, description, phone, address, order, ...(type && { type: type as any }) },
+  });
+  return { success: true };
+}
+
 /** 배너 상세 조회 */
 export async function getBannerDetail(id: string) {
   return prisma.bannerAd.findUnique({
