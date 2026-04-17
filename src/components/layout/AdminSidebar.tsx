@@ -13,6 +13,7 @@ import {
   Flag,
   Layers,
   ArrowUpDown,
+  CalendarCheck,
   ExternalLink,
   LogOut,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { href: "/admin/banners", label: "배너관리", icon: Image },
   { href: "/admin/realestate", label: "부동산매물", icon: Building2 },
   { href: "/admin/choicetalk", label: "초이스톡", icon: MessageCircle },
+  { href: "/admin/attendance", label: "출석체크", icon: CalendarCheck },
   { href: "/admin/reports", label: "신고처리", icon: Flag },
 ];
 

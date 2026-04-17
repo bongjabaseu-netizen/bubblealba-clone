@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, LogOut, Settings, Coins, BookOpen, Headphones, Heart, Bookmark, FileText } from "lucide-react";
+import { ChevronRight, LogOut, Settings, Coins, BookOpen, Headphones, Heart, Bookmark, FileText, CalendarCheck } from "lucide-react";
 import { getProfile } from "@/lib/actions/users";
 import { signOut } from "@/auth";
 import { ThemeToggle } from "./theme-toggle";
@@ -49,6 +49,11 @@ export default async function MyPage() {
           <ChevronRight className="h-18px w-18px text-font-disabled" strokeWidth={2} />
         </div>
       </Link>
+
+      <hr className="border-line-gray-20" />
+
+      {/* 출석체크 */}
+      <MenuLink href="/attendance" icon={CalendarCheck} label="출석체크" />
 
       <hr className="border-line-gray-20" />
 

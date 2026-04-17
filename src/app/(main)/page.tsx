@@ -75,8 +75,19 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* 초이스톡 + 광고 등록하기 CTA */}
+      {/* 출석체크 + 초이스톡 + 광고 등록하기 CTA */}
       <div className="mt-12px">
+        <Link
+          href="/attendance"
+          className="active-bg-gray flex h-44px items-center gap-6px px-15px font-15sb text-font-black border-b border-line-gray-20"
+        >
+          <div className="flex h-5 w-5 items-center justify-center rounded bg-green-500/10 text-green-600">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <span className="mr-auto">출석체크</span>
+          <span className="text-xs text-orange-500 font-bold mr-1">매일 포인트 적립!</span>
+          <ChevronRight className="h-18px w-18px text-font-black" strokeWidth={2} />
+        </Link>
         <Link
           href="/choicetalk"
           className="active-bg-gray flex h-44px items-center gap-6px px-15px font-15sb text-font-black border-b border-line-gray-20"

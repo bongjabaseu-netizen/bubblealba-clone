@@ -46,6 +46,7 @@ model User {
   adBids        AdBid[]            @relation("adBids")
   choiceTalkRooms    ChoiceTalkRoom[]    @relation("choiceTalkOwner")
   choiceTalkMessages ChoiceTalkMessage[] @relation("choiceTalkAuthor")
+  attendances        Attendance[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -537,4 +538,20 @@ model ChoiceTalkMessage {
 
   @@index([roomId, createdAt])
   @@index([authorId])
+}
+
+// ========== Attendance (출석체크) ==========
+
+model Attendance {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      String   // "2026-04-18" 형태 (날짜 단위 중복 방지)
+  points    Int      @default(10)  // 적립 포인트
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
 }
