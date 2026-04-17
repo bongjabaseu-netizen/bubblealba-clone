@@ -1,7 +1,7 @@
 /** 관리자 광고 테이블 — 상태 변경 + 편집(이미지 포함) */
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateJobStatus, searchJobs, updateJob } from "@/lib/actions/admin";
 import { ImageUploader } from "@/components/ImageUploader";
@@ -73,6 +73,9 @@ export function AdminJobTable({ jobs: initialJobs }: { jobs: Job[] }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [jobs, setJobs] = useState(initialJobs);
   const [editJob, setEditJob] = useState<Job | null>(null);
+
+  // router.refresh() 후 새 데이터 반영
+  useEffect(() => { setJobs(initialJobs); }, [initialJobs]);
 
   const filtered = statusFilter === "ALL"
     ? jobs
@@ -242,11 +245,20 @@ function EditJobModal({ job, onClose, onSaved }: { job: Job; onClose: () => void
   const [tagInput, setTagInput] = useState(existingTags.join(", "));
 
   function addImage(url: string) {
-    setImages((prev) => [...prev, url]);
+    // 이미지가 1개면 교체, 여러 개면 추가
+    if (images.length === 1) {
+      setImages([url]);
+    } else {
+      setImages((prev) => [...prev, url]);
+    }
   }
 
   function removeImage(idx: number) {
     setImages((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function replaceImage(idx: number, url: string) {
+    setImages((prev) => prev.map((v, i) => i === idx ? url : v));
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -325,25 +337,31 @@ function EditJobModal({ job, onClose, onSaved }: { job: Job; onClose: () => void
             {images.length > 0 && (
               <div className="grid grid-cols-4 gap-2 mb-3">
                 {images.map((url, i) => (
-                  <div key={i} className="relative group">
+                  <div key={i} className="relative">
                     <img src={url} alt="" className="w-full aspect-square object-cover rounded-lg border border-slate-200" />
                     <button
                       type="button"
                       onClick={() => removeImage(i)}
-                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs font-bold flex items-center justify-center shadow-md hover:bg-red-600"
                     >
                       ×
                     </button>
+                    {i === 0 && (
+                      <span className="absolute bottom-1 left-1 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">대표</span>
+                    )}
                   </div>
                 ))}
               </div>
             )}
+            <p className="text-xs text-slate-400 mb-2">
+              {images.length === 0 ? "이미지를 업로드하세요" : images.length === 1 ? "새 이미지 업로드 시 기존 이미지가 교체됩니다" : "× 버튼으로 삭제 후 새 이미지를 추가하세요"}
+            </p>
             <ImageUploader
               value=""
               onChange={addImage}
               folder="jobs"
               label=""
-              placeholder="클릭하거나 드래그해서 이미지 추가"
+              placeholder="클릭하거나 드래그해서 이미지 업로드"
             />
           </div>
 
