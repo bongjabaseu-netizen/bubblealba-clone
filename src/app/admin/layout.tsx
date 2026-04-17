@@ -1,6 +1,6 @@
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +9,18 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // 관리자 로그인 페이지는 사이드바 없이 렌더링
+  const headersList = await headers();
+  const pathname = headersList.get("x-next-pathname") || "";
+  const url = headersList.get("x-forwarded-url") || headersList.get("referer") || "";
+  const isLoginPage = pathname.includes("/admin/login") || url.includes("/admin/login");
+
   const session = await auth();
-  if (!session) redirect("/login");
+
+  // 로그인 페이지면 레이아웃 없이 바로 렌더링
+  if (!session || isLoginPage) {
+    return <>{children}</>;
+  }
 
   const nickname =
     (session.user as any)?.nickname ?? session.user?.name ?? "관리자";

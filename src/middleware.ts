@@ -20,10 +20,15 @@ export async function middleware(req: NextRequest) {
     cookieName: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
   });
 
+  // 관리자 로그인 페이지는 스킵
+  if (pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
   // 관리자 페이지 — ADMIN만
   if (adminPaths.some((p) => pathname.startsWith(p))) {
     if (!token) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return NextResponse.redirect(new URL("/admin/login", req.url));
     }
     if (token.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/", req.url));
@@ -53,5 +58,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/mypage/:path*", "/community/write", "/notification", "/admin", "/admin/:path*", "/advertiser", "/advertiser/:path*"],
+  matcher: ["/mypage/:path*", "/community/write", "/notification", "/admin", "/admin/((?!login).)*", "/admin/:path*", "/advertiser", "/advertiser/:path*"],
 };
