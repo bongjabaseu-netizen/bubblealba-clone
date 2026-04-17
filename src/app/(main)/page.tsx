@@ -32,9 +32,16 @@ export default async function HomePage({
         <JobFilters />
       </Suspense>
 
+      {/* ===== 로고 배너 ===== */}
+      <div className="px-15px mt-12px">
+        <div className="rounded-10px overflow-hidden">
+          <img src="/logo/logo-banner.png" alt="명품알바 PREMIUM ALBA" className="w-full h-auto" />
+        </div>
+      </div>
+
       {/* ===== 사진 광고 영역 ===== */}
       {(banners.imageTop.length > 0 || banners.imageMid.length > 0 || banners.imageBot.length > 0) && (
-        <div className="px-15px mt-12px space-y-6px">
+        <div className="px-15px mt-6px space-y-6px">
           {/* 최상단 2개 — 큰 배너 */}
           {banners.imageTop.length > 0 && (
             <div className="grid grid-cols-2 gap-6px">
@@ -170,15 +177,16 @@ function JobItem({ job, daysAdvertised }: JobItemProps) {
         <div className="flex min-w-0 flex-1 flex-col gap-2px">
           <div className="flex h-18px items-center gap-3px">
             <GoldBadge />
-            <span className="font-12sb text-font-black">{job.company}</span>
+            <span className="font-12sb text-orange-600">{job.company}</span>
             <span className="font-12rg text-font-disabled">· {daysAdvertised}일째 광고중</span>
           </div>
           <h2 className="font-16sb text-font-black truncate">{job.title}</h2>
           <div className="font-13rg">
             <span className="text-font-black">{wageLabel} {wageAmount}</span>
-            <span className="text-font-disabled">
+            <span className="text-blue-500">
               {" · "}
-              {job.region} {job.city}
+              {job.region} {job.city}</span>
+            <span className="text-font-disabled">
               {" · "}
               {categoryLabel(job.category)}
             </span>

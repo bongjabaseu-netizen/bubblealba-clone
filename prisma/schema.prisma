@@ -46,6 +46,7 @@ model User {
   adBids        AdBid[]            @relation("adBids")
   choiceTalkRooms    ChoiceTalkRoom[]    @relation("choiceTalkOwner")
   choiceTalkMessages ChoiceTalkMessage[] @relation("choiceTalkAuthor")
+  choiceTalkFavorites ChoiceTalkFavorite[]
   attendances        Attendance[]
 
   createdAt     DateTime  @default(now())
@@ -517,6 +518,7 @@ model ChoiceTalkRoom {
   ownerId       String
   owner         User     @relation("choiceTalkOwner", fields: [ownerId], references: [id])
   messages      ChoiceTalkMessage[]
+  favorites     ChoiceTalkFavorite[]
 
   lastMessageAt DateTime?
   createdAt     DateTime @default(now())
@@ -538,6 +540,20 @@ model ChoiceTalkMessage {
 
   @@index([roomId, createdAt])
   @@index([authorId])
+}
+
+model ChoiceTalkFavorite {
+  id     String @id @default(cuid())
+  userId String
+  roomId String
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room   ChoiceTalkRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roomId])
+  @@index([userId])
 }
 
 // ========== Attendance (출석체크) ==========

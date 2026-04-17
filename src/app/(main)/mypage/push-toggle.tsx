@@ -24,7 +24,7 @@ export function PushToggle() {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
         setEnabled(true);
-        new Notification("버블알바", {
+        new Notification("명품알바", {
           body: "푸시 알림이 활성화되었습니다.",
           icon: "/favicon.ico",
         });

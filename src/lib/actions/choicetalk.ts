@@ -14,6 +14,7 @@ export async function getChoiceTalkRooms(search?: string) {
     where,
     include: {
       owner: { select: { nickname: true } },
+      job: { select: { company: true, images: true, region: true, city: true } },
       _count: { select: { messages: true } },
     },
     orderBy: { lastMessageAt: { sort: "desc", nulls: "last" } },
@@ -69,6 +70,38 @@ export async function sendChoiceTalkMessage(roomId: string, content: string) {
   });
 
   return { success: true, message };
+}
+
+/** 초이스톡 즐겨찾기 토글 */
+export async function toggleChoiceTalkFavorite(roomId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "로그인이 필요합니다" };
+
+  const existing = await prisma.choiceTalkFavorite.findUnique({
+    where: { userId_roomId: { userId: session.user.id, roomId } },
+  });
+
+  if (existing) {
+    await prisma.choiceTalkFavorite.delete({ where: { id: existing.id } });
+    return { success: true, favorited: false };
+  } else {
+    await prisma.choiceTalkFavorite.create({
+      data: { userId: session.user.id, roomId },
+    });
+    return { success: true, favorited: true };
+  }
+}
+
+/** 내 즐겨찾기 roomId 목록 */
+export async function getMyChoiceTalkFavorites(): Promise<string[]> {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  const favs = await prisma.choiceTalkFavorite.findMany({
+    where: { userId: session.user.id },
+    select: { roomId: true },
+  });
+  return favs.map((f) => f.roomId);
 }
 
 // ========== 관리자 ==========

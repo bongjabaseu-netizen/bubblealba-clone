@@ -40,11 +40,11 @@ export function AdminSidebar() {
     <aside className="w-60 shrink-0 bg-slate-900 text-slate-300 min-h-screen flex flex-col">
       {/* Logo */}
       <div className="h-16 px-4 flex items-center gap-3 border-b border-slate-800">
-        <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg">
-          B
+        <div className="w-9 h-9 rounded-full overflow-hidden">
+          <img src="/logo/logo-main.png" alt="명품알바" className="w-full h-full object-cover" />
         </div>
         <div>
-          <div className="text-sm font-bold text-white">버블알바</div>
+          <div className="text-sm font-bold text-white">명품알바</div>
           <div className="text-[10px] text-slate-400 leading-none">관리자 콘솔</div>
         </div>
       </div>

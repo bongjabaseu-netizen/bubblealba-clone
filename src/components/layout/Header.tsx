@@ -39,7 +39,7 @@ function getTitle(pathname: string): string {
   }
   if (pathname.startsWith("/choicetalk/")) return "초이스톡";
   if (pathname.startsWith("/job/")) return "채용정보";
-  return "버블알바";
+  return "명품알바";
 }
 
 export function Header() {

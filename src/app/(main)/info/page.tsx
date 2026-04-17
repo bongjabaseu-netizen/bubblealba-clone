@@ -15,7 +15,7 @@ export default function InfoPage() {
       <section>
         <h1 className="text-3xl font-bold mb-2">회사소개 & 고객센터</h1>
         <p className="text-muted-foreground">
-          버블알바는 대한민국 No.1 여성 전용 구인 플랫폼입니다.
+          명품알바는 대한민국 No.1 여성 전용 구인 플랫폼입니다.
         </p>
       </section>
 
@@ -41,7 +41,7 @@ export default function InfoPage() {
             <MessageCircle className="w-8 h-8 mx-auto mb-2 text-primary" />
             <div className="text-sm font-semibold mb-1">카톡 상담</div>
             <div className="text-xs text-muted-foreground">평일 실시간</div>
-            <div className="text-sm font-bold mt-2">@버블알바</div>
+            <div className="text-sm font-bold mt-2">@명품알바</div>
           </CardContent>
         </Card>
       </section>

@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-/** 초이스톡 목록 — 업소별 톡방 카드 리스트 */
+/** 초이스톡 목록 — 업소별 톡방 카드 + 즐겨찾기 별표 */
 import Link from "next/link";
-import { getChoiceTalkRooms } from "@/lib/actions/choicetalk";
+import { getChoiceTalkRooms, getMyChoiceTalkFavorites } from "@/lib/actions/choicetalk";
+import { FavoriteStar } from "./FavoriteStar";
 
 function formatTime(date: Date | null): string {
   if (!date) return "";
@@ -17,13 +18,33 @@ function formatTime(date: Date | null): string {
   return d.toLocaleDateString("ko-KR", { month: "long", day: "numeric" });
 }
 
+function safeJsonParse<T>(val: unknown, fallback: T): T {
+  if (Array.isArray(val)) return val as T;
+  if (typeof val === "string") {
+    try { return JSON.parse(val); } catch { return fallback; }
+  }
+  return fallback;
+}
+
 export default async function ChoiceTalkListPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const rooms = await getChoiceTalkRooms(q);
+  const [rooms, favoriteIds] = await Promise.all([
+    getChoiceTalkRooms(q),
+    getMyChoiceTalkFavorites(),
+  ]);
+
+  const favSet = new Set(favoriteIds);
+
+  // 즐겨찾기 상단 정렬
+  const sorted = [...rooms].sort((a, b) => {
+    const aFav = favSet.has(a.id) ? 0 : 1;
+    const bFav = favSet.has(b.id) ? 0 : 1;
+    return aFav - bFav;
+  });
 
   return (
     <>
@@ -46,36 +67,48 @@ export default async function ChoiceTalkListPage({
 
       {/* 톡방 리스트 */}
       <ul className="mt-8px">
-        {rooms.map((room) => (
-          <li key={room.id}>
-            <Link
-              href={`/choicetalk/${room.slug}`}
-              className="flex items-center gap-12px px-15px py-12px active-bg border-b border-line-gray-20"
-            >
-              {/* 로고 */}
-              <div className="w-[56px] h-[56px] rounded-14px bg-bg-gray-50 overflow-hidden shrink-0 flex items-center justify-center">
-                {room.logo ? (
-                  <img src={room.logo} alt={room.name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-16sb text-font-gray">{room.name[0]}</span>
-                )}
-              </div>
+        {sorted.map((room) => {
+          const jobImages: string[] = room.job?.images ? safeJsonParse(room.job.images, []) : [];
+          const displayLogo = room.logo || jobImages[0] || null;
+          const displayName = room.job?.company || room.name;
+          const location = room.job ? `${room.job.region} ${room.job.city ?? ""}`.trim() : "";
+          const isFav = favSet.has(room.id);
 
-              {/* 정보 */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <span className="font-15sb text-font-black truncate">{room.name}</span>
-                  <span className="font-12rg text-font-disabled shrink-0 ml-8px">
-                    {formatTime(room.lastMessageAt)}
-                  </span>
+          return (
+            <li key={room.id} className={isFav ? "bg-yellow-50/50" : ""}>
+              <Link
+                href={`/choicetalk/${room.slug}`}
+                className="flex items-center gap-12px px-15px py-12px active-bg border-b border-line-gray-20"
+              >
+                {/* 로고/배너 이미지 */}
+                <div className="w-[56px] h-[56px] rounded-14px bg-bg-gray-50 overflow-hidden shrink-0 flex items-center justify-center">
+                  {displayLogo ? (
+                    <img src={displayLogo} alt={displayName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-16sb text-font-gray">{displayName[0]}</span>
+                  )}
                 </div>
-                <div className="font-13rg text-font-gray mt-2px">
-                  맞출방 {room.roomCount} · 맞출인원 {room.memberCount}
+
+                {/* 정보 */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="font-15sb text-orange-600 truncate">{displayName}</span>
+                    <div className="flex items-center gap-1 shrink-0 ml-4px">
+                      <span className="font-12rg text-font-disabled">
+                        {formatTime(room.lastMessageAt)}
+                      </span>
+                      <FavoriteStar roomId={room.id} isFavorited={isFav} />
+                    </div>
+                  </div>
+                  <div className="font-13rg text-font-gray mt-2px">
+                    {location && <span className="text-blue-500">{location} · </span>}
+                    맞출방 {room.roomCount} · 맞출인원 {room.memberCount}
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </li>
-        ))}
+              </Link>
+            </li>
+          );
+        })}
 
         {rooms.length === 0 && (
           <li className="px-15px py-40px text-center">

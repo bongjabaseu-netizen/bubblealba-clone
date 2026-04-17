@@ -60,7 +60,7 @@ export default function LoginPage() {
           </h1>
           <p className="text-sm text-muted-foreground">
             {mode === "login"
-              ? "버블알바에 오신 것을 환영해요"
+              ? "명품알바에 오신 것을 환영해요"
               : "새 계정을 만들어보세요"}
           </p>
         </div>
