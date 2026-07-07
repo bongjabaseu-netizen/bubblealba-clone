@@ -6,7 +6,16 @@ import { revalidatePath } from "next/cache";
 async function requireAdmin() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("로그인이 필요합니다");
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+
+  // 토큰에 ADMIN role이 있으면 바로 통과 (성능 최적화 + JWT 기반)
+  const tokenRole = (session.user as { role?: string } | undefined)?.role;
+  if (tokenRole === "ADMIN") return session;
+
+  // DB에서 최신 role 확인 (fallback)
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
   if (user?.role !== "ADMIN") throw new Error("관리자 권한이 필요합니다");
   return session;
 }

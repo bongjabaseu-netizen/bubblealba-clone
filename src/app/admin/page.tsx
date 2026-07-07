@@ -6,14 +6,20 @@ import {
   getTodayStats,
 } from "@/lib/actions/admin";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function AdminDashboard() {
-  const [stats, recentUsers, recentJobs, today] = await Promise.all([
-    getAdminStats(),
-    getRecentUsers(5),
-    getRecentJobs(5),
-    getTodayStats(),
-  ]);
+  let stats, recentUsers, recentJobs, today;
+  try {
+    [stats, recentUsers, recentJobs, today] = await Promise.all([
+      getAdminStats(),
+      getRecentUsers(5),
+      getRecentJobs(5),
+      getTodayStats(),
+    ]);
+  } catch {
+    redirect("/admin/login");
+  }
 
   const cards = [
     {
