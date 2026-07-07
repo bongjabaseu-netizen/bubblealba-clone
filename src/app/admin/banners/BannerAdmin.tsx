@@ -1,9 +1,10 @@
-/** 관리자 배너 — 생성/편집/토글/삭제 + 사이즈 안내 */
+/** 관리자 배너 — 생성/편집/토글/삭제/순서이동 + 사이즈 안내 */
 "use client";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { adminCreateBanner, adminToggleBanner, adminDeleteBanner, adminUpdateBanner } from "@/lib/actions/banners";
+import { ArrowUp, ArrowDown, Pencil, Trash2, Power, Plus, Save, X } from "lucide-react";
+import { adminCreateBanner, adminToggleBanner, adminDeleteBanner, adminUpdateBanner, adminSwapBannerOrder } from "@/lib/actions/banners";
 import { ImageUploader } from "@/components/ImageUploader";
 
 const BANNER_TYPES = [
@@ -63,6 +64,16 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
     startTransition(async () => { await adminDeleteBanner(id); router.refresh(); });
   }
 
+  /** 같은 타입 그룹 내 위/아래 이동 — 두 배너의 표시 위치 맞바꿈 (실패 시 handleCreate와 동일한 error 상태로 노출) */
+  function handleSwap(idA: string, idB: string) {
+    setError("");
+    startTransition(async () => {
+      const result = await adminSwapBannerOrder(idA, idB);
+      if (result?.error) setError(result.error);
+      else router.refresh();
+    });
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -70,8 +81,9 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
           <h1 className="text-xl font-bold text-slate-900">배너 관리</h1>
           <p className="text-sm text-slate-500">{banners.length}개 배너</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">
-          {showForm ? "취소" : "+ 배너 등록"}
+        <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-1 px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">
+          {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {showForm ? "취소" : "배너 등록"}
         </button>
       </div>
 
@@ -112,6 +124,9 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
         })}
       </div>
 
+      {/* 순서 이동 등 실패 메시지 — 등록 폼이 닫혀 있을 때도 error 상태 노출 (폼 열림 시엔 폼 내부에 표시) */}
+      {error && !showForm && <p className="text-sm text-red-500">{error}</p>}
+
       {/* 배너 리스트 */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
@@ -126,7 +141,13 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((b) => (
+            {filtered.map((b) => {
+              // 같은 타입 그룹 내 인접 배너 계산 — 그룹 경계에서는 이동 버튼 비활성 (banners는 [type, order] 정렬)
+              const sameType = banners.filter((x) => x.type === b.type);
+              const idx = sameType.findIndex((x) => x.id === b.id);
+              const prev = idx > 0 ? sameType[idx - 1] : null;
+              const next = idx < sameType.length - 1 ? sameType[idx + 1] : null;
+              return (
               <tr key={b.id} className="border-b border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3">
                   {b.imageUrl ? (
@@ -139,23 +160,45 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
                 </td>
                 <td className="px-4 py-3 text-xs text-slate-500">{TYPE_LABEL[b.type] ?? b.type}</td>
                 <td className="px-4 py-3 text-slate-700 max-w-[200px] truncate">{b.title ?? b.text ?? "-"}</td>
-                <td className="px-4 py-3 text-center text-slate-500">{b.order}</td>
+                <td className="px-4 py-3 text-center text-slate-500">
+                  <div className="flex items-center justify-center gap-1">
+                    <span>{b.order}</span>
+                    <button
+                      onClick={() => prev && handleSwap(b.id, prev.id)}
+                      disabled={isPending || !prev}
+                      className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="위로"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => next && handleSwap(b.id, next.id)}
+                      disabled={isPending || !next}
+                      className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="아래로"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-center">
                   <button onClick={() => handleToggle(b.id)} disabled={isPending}
-                    className={`px-2 py-1 rounded text-xs font-medium ${b.isActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${b.isActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+                    <Power className="w-3.5 h-3.5" />
                     {b.isActive ? "활성" : "비활성"}
                   </button>
                 </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex items-center justify-center gap-1">
                     <button onClick={() => setEditBanner(b)}
-                      className="px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100">편집</button>
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100"><Pencil className="w-3.5 h-3.5" />편집</button>
                     <button onClick={() => handleDelete(b.id, b.title)} disabled={isPending}
-                      className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100">삭제</button>
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100"><Trash2 className="w-3.5 h-3.5" />삭제</button>
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {filtered.length === 0 && (
               <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-400">배너가 없습니다</td></tr>
             )}
@@ -231,7 +274,8 @@ function BannerForm({ selectedType, setSelectedType, typeInfo, imageUrl, setImag
           </div>
         </>
       )}
-      <button type="submit" disabled={isPending} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+      <button type="submit" disabled={isPending} className="inline-flex items-center gap-1 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+        <Plus className="w-4 h-4" />
         {isPending ? "등록 중..." : "배너 등록"}
       </button>
     </form>
@@ -326,8 +370,9 @@ function EditBannerModal({ banner, onClose, onSaved }: { banner: Banner; onClose
           )}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">취소</button>
-            <button type="submit" disabled={isPending} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            <button type="button" onClick={onClose} className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"><X className="w-4 h-4" />취소</button>
+            <button type="submit" disabled={isPending} className="inline-flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+              <Save className="w-4 h-4" />
               {isPending ? "저장 중..." : "저장"}
             </button>
           </div>

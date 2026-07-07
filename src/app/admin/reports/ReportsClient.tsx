@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { handleReport } from "@/lib/actions/admin";
 
 type Report = {
@@ -154,15 +155,17 @@ export function ReportsClient({ reports }: { reports: Report[] }) {
                         <button
                           onClick={() => handleAction(r.id, "RESOLVED")}
                           disabled={isPending}
-                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50 gap-1 whitespace-nowrap"
                         >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                           처리완료
                         </button>
                         <button
                           onClick={() => handleAction(r.id, "DISMISSED")}
                           disabled={isPending}
-                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50 gap-1 whitespace-nowrap"
                         >
+                          <XCircle className="w-3.5 h-3.5" />
                           반려
                         </button>
                       </div>

@@ -3,6 +3,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil, Check, X, Archive, Save } from "lucide-react";
 import { updateJobStatus, searchJobs, updateJob } from "@/lib/actions/admin";
 import { ImageUploader } from "@/components/ImageUploader";
 
@@ -225,29 +226,33 @@ export function AdminJobTable({ jobs: initialJobs }: { jobs: Job[] }) {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setEditJob(j)}
-                          className="px-2 py-1 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                          className="px-2 py-1 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors inline-flex items-center gap-1 whitespace-nowrap"
                         >
+                          <Pencil className="w-3.5 h-3.5" />
                           편집
                         </button>
                         <button
                           disabled={isPending && changingId === j.id}
                           onClick={() => handleStatus(j.id, "ACTIVE")}
-                          className="px-2 py-1 text-xs font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
+                          className="px-2 py-1 text-xs font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50 inline-flex items-center gap-1 whitespace-nowrap"
                         >
+                          <Check className="w-3.5 h-3.5" />
                           승인
                         </button>
                         <button
                           disabled={isPending && changingId === j.id}
                           onClick={() => handleStatus(j.id, "REJECTED")}
-                          className="px-2 py-1 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
+                          className="px-2 py-1 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50 inline-flex items-center gap-1 whitespace-nowrap"
                         >
+                          <X className="w-3.5 h-3.5" />
                           거절
                         </button>
                         <button
                           disabled={isPending && changingId === j.id}
                           onClick={() => handleStatus(j.id, "CLOSED")}
-                          className="px-2 py-1 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50"
+                          className="px-2 py-1 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50 inline-flex items-center gap-1 whitespace-nowrap"
                         >
+                          <Archive className="w-3.5 h-3.5" />
                           마감
                         </button>
                       </div>
@@ -399,10 +404,12 @@ function EditJobModal({ job, onClose, onSaved }: { job: Job; onClose: () => void
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 inline-flex items-center gap-1">
+              <X className="w-4 h-4" />
               취소
             </button>
-            <button type="submit" disabled={isPending} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={isPending} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 inline-flex items-center gap-1">
+              <Save className="w-4 h-4" />
               {isPending ? "저장 중..." : "저장"}
             </button>
           </div>

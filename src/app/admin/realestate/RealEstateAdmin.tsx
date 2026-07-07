@@ -3,6 +3,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Plus, Trash2 } from "lucide-react";
 import { createListing, updateListingStatus, deleteListing } from "@/lib/actions/realestate";
 
 const REGIONS = ["서울", "경기", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
@@ -67,8 +68,9 @@ export function RealEstateAdmin({ listings }: { listings: Listing[] }) {
           <h1 className="text-xl font-bold text-slate-900">부동산 매물 관리</h1>
           <p className="text-sm text-slate-500">{listings.length}개 매물</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
-          {showForm ? "취소" : "+ 매물 등록"}
+        {/* 등록 버튼 — 기존 "+" 텍스트 글리프를 Plus 아이콘으로 대체 */}
+        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 inline-flex items-center gap-1">
+          {showForm ? "취소" : <><Plus className="w-3.5 h-3.5" />매물 등록</>}
         </button>
       </div>
 
@@ -156,8 +158,8 @@ export function RealEstateAdmin({ listings }: { listings: Listing[] }) {
             <textarea name="description" required rows={4} className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="매물 상세 설명" />
           </div>
 
-          <button type="submit" disabled={isPending} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-            {isPending ? "등록 중..." : "매물 등록"}
+          <button type="submit" disabled={isPending} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50 inline-flex items-center gap-1">
+            {isPending ? "등록 중..." : <><Plus className="w-3.5 h-3.5" />매물 등록</>}
           </button>
         </form>
       )}
@@ -208,7 +210,7 @@ export function RealEstateAdmin({ listings }: { listings: Listing[] }) {
                     </select>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <button onClick={() => handleDelete(l.id, l.title)} disabled={isPending} className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100">삭제</button>
+                    <button onClick={() => handleDelete(l.id, l.title)} disabled={isPending} className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 inline-flex items-center gap-1"><Trash2 className="w-3.5 h-3.5" />삭제</button>
                   </td>
                 </tr>
               );

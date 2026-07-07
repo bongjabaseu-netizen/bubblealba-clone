@@ -3,11 +3,11 @@
 
 import { prisma } from "@/lib/prisma";
 
-/** 홈페이지 배너 조회 — 타입별 정렬 */
+/** 홈페이지 배너 조회 — 타입별 정렬 (order 동률 시 createdAt으로 순서 결정화) */
 export async function getBannerAds() {
   const banners = await prisma.bannerAd.findMany({
     where: { isActive: true },
-    orderBy: { order: "asc" },
+    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
   });
 
   return {
@@ -25,10 +25,10 @@ export async function getBannerAds() {
 
 // ========== 관리자 ==========
 
-/** 관리자: 전체 배너 목록 */
+/** 관리자: 전체 배너 목록 (order 동률 시 createdAt으로 순서 결정화 — 스왑 트랜잭션 내 읽기 순서와 일치) */
 export async function adminGetBanners() {
   return prisma.bannerAd.findMany({
-    orderBy: [{ type: "asc" }, { order: "asc" }],
+    orderBy: [{ type: "asc" }, { order: "asc" }, { createdAt: "asc" }],
     include: { user: { select: { nickname: true } } },
   });
 }
@@ -107,5 +107,32 @@ export async function getBannerDetail(id: string) {
   return prisma.bannerAd.findUnique({
     where: { id },
     include: { user: { select: { nickname: true } } },
+  });
+}
+
+/** 관리자: 같은 타입 그룹 내 두 배너의 표시 위치 맞바꿈 — order 값 교환이 아닌 "위치" 스왑 후 그룹 전체 1..n 재부여 (동률 order 정규화 겸용) */
+export async function adminSwapBannerOrder(idA: string, idB: string) {
+  const session = await (await import("@/auth")).auth();
+  if ((session?.user as any)?.role !== "ADMIN") return { error: "권한 없음" };
+
+  // 그룹 읽기 → 재번호 부여를 원자적으로 실행 (interactive transaction)
+  return await prisma.$transaction(async (tx) => {
+    const [a, b] = await Promise.all([
+      tx.bannerAd.findUnique({ where: { id: idA }, select: { type: true } }),
+      tx.bannerAd.findUnique({ where: { id: idB }, select: { type: true } }),
+    ]);
+    if (!a || !b) return { error: "배너를 찾을 수 없습니다." };
+    if (a.type !== b.type) return { error: "같은 타입 배너끼리만 이동할 수 있습니다." }; // 서버측 그룹 검증
+    // 그룹 전체를 표시 순서로 읽어 두 배너의 위치를 맞바꾸고 1..n 재부여
+    const group = await tx.bannerAd.findMany({
+      where: { type: a.type },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+      select: { id: true },
+    });
+    const ia = group.findIndex((x) => x.id === idA);
+    const ib = group.findIndex((x) => x.id === idB);
+    [group[ia], group[ib]] = [group[ib], group[ia]];
+    await Promise.all(group.map((x, i) => tx.bannerAd.update({ where: { id: x.id }, data: { order: i + 1 } })));
+    return { success: true };
   });
 }

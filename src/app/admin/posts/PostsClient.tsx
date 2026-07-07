@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { Search, Trash2 } from "lucide-react";
 import { deleteAdminPost } from "@/lib/actions/admin";
 
 type Post = {
@@ -56,13 +57,17 @@ export function PostsClient({ posts }: { posts: Post[] }) {
 
       {/* Filters */}
       <div className="flex items-center gap-3">
-        <input
-          type="text"
-          placeholder="제목 검색..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="h-9 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 w-64"
-        />
+        {/* 검색 아이콘(Search) — 입력창 왼쪽 안에 표시 */}
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="제목 검색..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-9 pl-8 pr-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 w-64"
+          />
+        </div>
         <select
           value={boardFilter}
           onChange={(e) => setBoardFilter(e.target.value)}
@@ -126,9 +131,7 @@ export function PostsClient({ posts }: { posts: Post[] }) {
                       disabled={isPending}
                       className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>

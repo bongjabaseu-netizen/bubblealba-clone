@@ -3,6 +3,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Plus, Power, Trash2, X } from "lucide-react";
 import { adminCreateRoom, adminToggleRoom, adminDeleteRoom } from "@/lib/actions/choicetalk";
 
 interface Room {
@@ -71,11 +72,12 @@ export function ChoiceTalkAdmin({ rooms, advertisers }: { rooms: Room[]; adverti
           <h1 className="text-xl font-bold text-slate-900">초이스톡 관리</h1>
           <p className="text-sm text-slate-500">{rooms.length}개 톡방</p>
         </div>
+        {/* 생성/취소 토글 버튼 — 열림 상태는 X, 닫힘 상태는 Plus 아이콘 */}
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600"
+          className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 inline-flex items-center gap-1"
         >
-          {showForm ? "취소" : "+ 톡방 추가"}
+          {showForm ? <><X className="w-3.5 h-3.5" />취소</> : <><Plus className="w-3.5 h-3.5" />톡방 추가</>}
         </button>
       </div>
 
@@ -109,8 +111,8 @@ export function ChoiceTalkAdmin({ rooms, advertisers }: { rooms: Room[]; adverti
               <input name="logo" className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
             </div>
           </div>
-          <button type="submit" disabled={isPending} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50">
-            {isPending ? "생성 중..." : "톡방 생성"}
+          <button type="submit" disabled={isPending} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:opacity-50 inline-flex items-center gap-1">
+            {isPending ? "생성 중..." : <><Plus className="w-3.5 h-3.5" />톡방 생성</>}
           </button>
         </form>
       )}
@@ -147,8 +149,9 @@ export function ChoiceTalkAdmin({ rooms, advertisers }: { rooms: Room[]; adverti
                   <button
                     onClick={() => handleToggle(room.id)}
                     disabled={isPending}
-                    className={`px-2 py-1 rounded text-xs font-medium ${room.isActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}
+                    className={`px-2 py-1 rounded text-xs font-medium inline-flex items-center gap-1 ${room.isActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}
                   >
+                    <Power className="w-3.5 h-3.5" />
                     {room.isActive ? "활성" : "비활성"}
                   </button>
                 </td>
@@ -156,8 +159,9 @@ export function ChoiceTalkAdmin({ rooms, advertisers }: { rooms: Room[]; adverti
                   <button
                     onClick={() => handleDelete(room.id, room.name)}
                     disabled={isPending}
-                    className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100"
+                    className="px-2 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 inline-flex items-center gap-1"
                   >
+                    <Trash2 className="w-3.5 h-3.5" />
                     삭제
                   </button>
                 </td>
