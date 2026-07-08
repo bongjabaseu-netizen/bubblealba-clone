@@ -1,6 +1,17 @@
 # LEARNINGS — clone-app
 
 - [가설 1회] 순서 변경 기능은 "order 값 교환"이 아니라 "표시 위치 교환 + 그룹 재번호"로 구현할 것 — 값 교환은 동률 order(생성 기본값 0)에서 방향이 뒤집힌다. 시드 데이터(순번 부여됨)로는 재현이 안 되므로 브라우저 테스트만으론 못 잡는다. 리뷰 시 "기본값/동률 데이터 케이스"를 필수 점검 항목에 넣을 것 (2026-07-07)
-- [가설 1회] 테이블 셀 안 버튼에 아이콘을 추가하면 한글 라벨이 글자 단위 세로 줄바꿈될 수 있다(CJK 개행 특성) — 아이콘 추가 시 `whitespace-nowrap`을 세트로 적용하고, DOM 카운트 검증 외에 스크린샷 육안 확인을 반드시 거칠 것 (2026-07-07)
+- [가설 2회] 테이블 셀 안 버튼에 아이콘을 추가하면 한글 라벨이 글자 단위 세로 줄바꿈될 수 있다(CJK 개행 특성) — 아이콘 추가 시 `whitespace-nowrap`을 세트로 적용하고, DOM 카운트 검증 외에 스크린샷 육안 확인을 반드시 거칠 것. 2026-07-08 입찰승인/광고주인증 버튼에서 같은 실수 반복(재빌드 1회 재작업) — 구현 시작 전 이 파일 선독이 예방책 (2026-07-07, 2026-07-08 재확인)
 - [가설 1회] 이 프로젝트 검증은 TDD 대신 `npx tsc --noEmit` + Playwright 실화면(로그인 포함) 증거 방식이 맞다 — 테스트 러너 없음, 프로젝트 CLAUDE.md 검증 체크리스트와 일치. 실 DB 관리자 계정은 seed와 다름(email `adm`) (2026-07-07)
 - [가설 1회] 로컬 dev 포트가 EACCES로 죽으면 윈도우 예약 포트 범위부터 확인(`netsh interface ipv4 show excludedportrange protocol=tcp`) — 재부팅마다 범위가 바뀌므로 코드 수정 없이 대체 포트로 기동이 맞다 (2026-07-07)
+- [가설 2회] seed 파일은 실제 DB 상태의 증거가 아니다 — 실 관리자 계정은 email `adm`/`admin1234` (seed의 admin@bubble.clone 없음). 2026-07-08 리더가 seed만 보고 검증관에 잘못된 계정 전달, 검증관이 실 DB 조회로 발견. 계정/데이터 전제는 실 DB 조회로 확인할 것 (2026-07-07, 2026-07-08 재확인)
+- [가설 1회] 병렬 서브에이전트는 idle 알림·구두 보고에 의존하지 말 것 — 무보고 에이전트(B)에 재촉 2회보다 git diff + tsc 등 디스크 산출물 검사가 빠르고 확실하다 (2026-07-08)
+- [가설 1회] Tailwind v4 @theme에 토큰 추가 전 기존 토큰명 충돌 grep 필수 — sample의 `accent`가 shadcn `--color-accent`와 충돌해 `brand`로 개명. 외부 디자인 시안의 색이름을 그대로 쓰지 말 것 (2026-07-08)
+- [가설 1회] 화면 검증은 반드시 실제 사용자 흐름(폼 제출→client-side 이동)으로 — page.goto() 직행은 referer가 없어 referer 의존 버그를 통과시킨다. 이번에 검증 PASS 후 사용자가 "사이드바 없음" 발견 (2026-07-08)
+- [가설 1회] Next 레이아웃에서 "특정 페이지만 제외"는 헤더(referer/pathname) 추측이 아니라 라우트 그룹으로 — admin/(panel) 분리로 로그인 직후 사이드바 소실 버그 근본 해결 (2026-07-08)
+- [가설 1회] 이 프로젝트 DB는 원격 Neon이라 쿼리 1왕복 ≈ 0.4~1.3초 — 레이아웃(매 이동 실행)에는 DB 호출을 넣지 말거나 반드시 TTL 캐시를 붙일 것. 배지 하나에 count 4개 금지 (2026-07-08)
+- [가설 1회] "NODE_ENV=production → https" 가정 금지 — middleware가 __Secure- 쿠키명을 강제해 로컬 http 프로덕션 빌드에서 로그인 무한 튕김. secure 판별은 req.nextUrl.protocol 기준으로 (2026-07-08)
+- [가설 1회] next build 중/후에 dev 서버를 켜두면 .next가 오염돼 "Failed to find Server Action" 발생 — 빌드 전 dev 중지, TaskStop 후엔 포트 점유 자식 프로세스를 PID로 확인 사살 (2026-07-08)
+- [가설 1회] prefix 매칭(startsWith) 기반 판정(AdminHeader PAGE_TITLES·사이드바 active)에서는 신규 라우트명이 기존 라우트의 확장 문자열이면 안 된다 — `ad-orders`는 `/admin/ad-order`에 잡아먹혀 오판정 → `orders`로 명명. 신규 admin 라우트는 기존 href와 prefix 겹침 확인 후 결정 (2026-07-08)
+- [가설 1회] 이 코드베이스는 "관리자 UI 없는 백엔드 자산"이 많다(adminApproveBid·getAdminAdOrders·verifyAdvertiserProfile 전부 UI 미연결이었음) — 새 관리자 기능은 액션 신규 작성 전 lib/actions 전체 grep부터. 이번엔 액션 4개 신규로 끝났고 승인/거절/조회는 전부 재사용·보강 (2026-07-08)
+- [가설 1회] 승인/거절류 상태 전이는 read-then-write(findUnique 검사 후 update) 대신 조건부 `updateMany({where:{id,status:"PENDING"}})` + count 검사로 — 관리자 탭 2개 동시 클릭이면 가드 둘 다 통과해 이중 알림·상태 충돌. 부수 효과(알림 등)는 count===1일 때만. 원격 DB 지연 환경에선 비동기 응답 역전도 같은 계열(검색엔 시퀀스 ref) (2026-07-08)

@@ -195,10 +195,13 @@ export async function verifyAdvertiserProfile(profileId: string) {
   });
   if (user?.role !== "ADMIN") return { error: "관리자 권한이 필요합니다" };
 
-  await prisma.advertiserProfile.update({
+  // updateMany: 존재하지 않는 profileId여도 P2025 throw 없이 count 0으로 처리
+  const { count } = await prisma.advertiserProfile.updateMany({
     where: { id: profileId },
     data: { verified: true },
   });
+  if (count === 0) return { error: "프로필을 찾을 수 없습니다" };
   revalidatePath("/admin/users");
+  revalidatePath("/admin/advertisers");
   return { success: true };
 }

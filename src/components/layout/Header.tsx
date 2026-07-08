@@ -48,9 +48,16 @@ export function Header() {
   void isEmbed;
   const title = getTitle(pathname);
 
+  // 홈에서는 상단 헤더 숨김 (스페이서 포함) — 다른 페이지는 유지
+  if (pathname === "/") return null;
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 mx-auto flex h-header max-w-mobile items-center justify-center border-b border-line-gray-20 bg-bg-white font-14sb text-font-black">
-      {title}
-    </header>
+    <>
+      {/* 헤더 공간 확보 (fixed 헤더 높이만큼) */}
+      <div className="h-header" aria-hidden="true" />
+      <header className="fixed top-0 left-0 right-0 z-50 mx-auto flex h-header max-w-mobile items-center justify-center border-b border-line-gray-20 bg-bg-white font-14sb text-font-black">
+        {title}
+      </header>
+    </>
   );
 }

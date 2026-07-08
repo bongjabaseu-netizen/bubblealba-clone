@@ -10,14 +10,15 @@ const advertiserPaths = ["/advertiser"];
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Vercel Production에서는 Secure prefix 쿠키 사용
-  const isProduction = process.env.NODE_ENV === "production";
+  // Secure prefix 쿠키는 실제 https 접속에서만 사용 (Vercel=https 그대로, 로컬 http 프로덕션 빌드 호환)
+  // NODE_ENV 기준 판별은 로컬에서 next start 실행 시 쿠키명 불일치로 로그인이 튕기는 버그가 있었음
+  const isSecure = req.nextUrl.protocol === "https:";
   const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
-    secureCookie: isProduction,
-    salt: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
-    cookieName: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
+    secureCookie: isSecure,
+    salt: isSecure ? "__Secure-authjs.session-token" : "authjs.session-token",
+    cookieName: isSecure ? "__Secure-authjs.session-token" : "authjs.session-token",
   });
 
   // 관리자 로그인 페이지는 스킵

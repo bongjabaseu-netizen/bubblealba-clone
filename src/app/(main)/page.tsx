@@ -1,10 +1,9 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Plus, ChevronRight } from "lucide-react";
-import { Suspense } from "react";
 import { getJobs } from "@/lib/actions/jobs";
 import { getBannerAds } from "@/lib/actions/banners";
-import { JobFilters } from "./components/job-filters";
+// import { JobFilters } from "./components/job-filters"; // 홈 필터/검색 임시 숨김 (2026-07-08)
 import { TextRolling } from "./components/TextRolling";
 
 /**
@@ -27,46 +26,45 @@ export default async function HomePage({
 
   return (
     <>
-      {/* 지역/직종 드롭다운 + 검색바 (클라이언트 컴포넌트) */}
+      {/* 지역/직종 드롭다운 + 검색바 — 홈에서 임시 숨김 (사용자 디자인 지시 2026-07-08)
       <Suspense>
         <JobFilters />
       </Suspense>
+      */}
 
-      {/* ===== 로고 배너 ===== */}
-      <div className="px-15px mt-12px">
-        <div className="rounded-10px overflow-hidden">
-          <img src="/logo/logo-banner.png" alt="명품알바 PREMIUM ALBA" className="w-full h-auto" />
-        </div>
+      {/* ===== 로고 배너 ===== 높이 절반(object-cover)·모서리 각·상단 여백 제거 */}
+      <div>
+        <img src="/logo/logo-banner.png" alt="명품알바 PREMIUM ALBA" className="w-full h-[80px] object-cover" />
       </div>
 
-      {/* ===== 사진 광고 영역 ===== */}
+      {/* ===== 사진 광고 영역 ===== 배너 딱붙게(gap-0)·높이 절반(aspect 세로 1/2)·각진 모서리 */}
       {(banners.imageTop.length > 0 || banners.imageMid.length > 0 || banners.imageBot.length > 0) && (
-        <div className="px-15px mt-6px space-y-6px">
-          {/* 최상단 2개 — 큰 배너 */}
+        <div>
+          {/* 최상단 2개 — 큰 배너 (2:1 → 4:1로 높이 절반) */}
           {banners.imageTop.length > 0 && (
-            <div className="grid grid-cols-2 gap-6px">
+            <div className="grid grid-cols-2">
               {banners.imageTop.map((ad) => (
-                <a key={ad.id} href={ad.linkUrl && ad.linkUrl !== "#" && ad.linkUrl !== "/job" ? ad.linkUrl : `/banner/${ad.id}`} className="block rounded-10px overflow-hidden bg-bg-gray-50 aspect-[2/1]">
+                <a key={ad.id} href={ad.linkUrl && ad.linkUrl !== "#" && ad.linkUrl !== "/job" ? ad.linkUrl : `/banner/${ad.id}`} className="block overflow-hidden bg-bg-gray-50 h-[75px]">
                   <img src={ad.imageUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </a>
               ))}
             </div>
           )}
-          {/* 두번째줄 3개 */}
+          {/* 두번째줄 3개 (1:1 → 2:1로 높이 절반) */}
           {banners.imageMid.length > 0 && (
-            <div className="grid grid-cols-3 gap-6px">
+            <div className="grid grid-cols-3">
               {banners.imageMid.map((ad) => (
-                <a key={ad.id} href={ad.linkUrl && ad.linkUrl !== "#" && ad.linkUrl !== "/job" ? ad.linkUrl : `/banner/${ad.id}`} className="block rounded-10px overflow-hidden bg-bg-gray-50 aspect-square">
+                <a key={ad.id} href={ad.linkUrl && ad.linkUrl !== "#" && ad.linkUrl !== "/job" ? ad.linkUrl : `/banner/${ad.id}`} className="block overflow-hidden bg-bg-gray-50 h-[75px]">
                   <img src={ad.imageUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </a>
               ))}
             </div>
           )}
-          {/* 세번째줄 4개 */}
+          {/* 세번째줄 4개 (1:1 → 2:1로 높이 절반) */}
           {banners.imageBot.length > 0 && (
-            <div className="grid grid-cols-4 gap-6px">
+            <div className="grid grid-cols-4">
               {banners.imageBot.map((ad) => (
-                <a key={ad.id} href={ad.linkUrl && ad.linkUrl !== "#" && ad.linkUrl !== "/job" ? ad.linkUrl : `/banner/${ad.id}`} className="block rounded-10px overflow-hidden bg-bg-gray-50 aspect-square">
+                <a key={ad.id} href={ad.linkUrl && ad.linkUrl !== "#" && ad.linkUrl !== "/job" ? ad.linkUrl : `/banner/${ad.id}`} className="block overflow-hidden bg-bg-gray-50 h-[75px]">
                   <img src={ad.imageUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </a>
               ))}
@@ -75,9 +73,9 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* ===== 텍스트 롤링 광고 ===== */}
+      {/* ===== 텍스트 롤링 광고 ===== 딱붙게(상단 여백 제거) */}
       {banners.textRolling.length > 0 && (
-        <div className="mt-8px">
+        <div>
           <TextRolling ads={banners.textRolling} />
         </div>
       )}

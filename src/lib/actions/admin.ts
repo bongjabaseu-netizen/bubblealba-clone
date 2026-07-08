@@ -325,6 +325,108 @@ export async function updateJob(jobId: string, formData: FormData) {
   return { success: true };
 }
 
+// ========== 입찰 승인 · 광고 거래 · 광고주 인증 · 결제 통계 ==========
+
+/** 관리자: 입찰 전체 목록 (승인 대기 우선 처리용 — 필터는 클라이언트) */
+export async function getAdminBids() {
+  await requireAdmin();
+  return prisma.adBid.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: { select: { nickname: true, email: true } },
+      job: { select: { title: true } },
+      package: { select: { name: true } },
+    },
+  });
+}
+
+/** 관리자: 광고주 프로필 목록 (미인증 우선) */
+export async function getAdvertiserProfiles() {
+  await requireAdmin();
+  return prisma.advertiserProfile.findMany({
+    orderBy: [{ verified: "asc" }, { createdAt: "desc" }],
+    include: {
+      user: { select: { nickname: true, email: true, role: true } },
+    },
+  });
+}
+
+/** 관리자: 결제 통계 — 전용 결제 테이블이 없어 AdOrder(COMPLETED)+AdBid(APPROVED) 합산
+ * ADMIN_APPROVE 입찰은 포인트 차감 없이 승인됨 → "승인 = 오프라인 결제 확인" 가정으로 매출 집계
+ * 오늘 결제액의 AdBid 기준은 updatedAt(≈승인 시각) — createdAt이면 어제 신청·오늘 승인 건이 누락됨 */
+export async function getPaymentStats() {
+  await requireAdmin();
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const [orderAgg, bidAgg, todayOrder, todayBid, pendingBids, unverifiedAdvertisers] =
+    await Promise.all([
+      prisma.adOrder.aggregate({
+        _sum: { amount: true },
+        _count: true,
+        where: { status: "COMPLETED" },
+      }),
+      prisma.adBid.aggregate({
+        _sum: { totalAmount: true },
+        _count: true,
+        where: { status: "APPROVED" },
+      }),
+      prisma.adOrder.aggregate({
+        _sum: { amount: true },
+        where: { status: "COMPLETED", createdAt: { gte: startOfDay } },
+      }),
+      prisma.adBid.aggregate({
+        _sum: { totalAmount: true },
+        where: { status: "APPROVED", updatedAt: { gte: startOfDay } },
+      }),
+      prisma.adBid.count({ where: { status: "PENDING" } }),
+      prisma.advertiserProfile.count({ where: { verified: false } }),
+    ]);
+
+  const totalRevenue = (orderAgg._sum.amount ?? 0) + (bidAgg._sum.totalAmount ?? 0);
+  const totalCount = orderAgg._count + bidAgg._count;
+  return {
+    totalRevenue,
+    totalCount,
+    avgAmount: totalCount > 0 ? Math.round(totalRevenue / totalCount) : 0,
+    todayRevenue: (todayOrder._sum.amount ?? 0) + (todayBid._sum.totalAmount ?? 0),
+    pendingBids,
+    unverifiedAdvertisers,
+  };
+}
+
+/** 관리자 통합검색 (⌘K) — 회원·공고·광고주 각 5건 */
+export async function adminSearchAll(query: string) {
+  await requireAdmin();
+  const q = query.trim();
+  if (!q) return { users: [], jobs: [], advertisers: [] };
+
+  const [users, jobs, advertisers] = await Promise.all([
+    prisma.user.findMany({
+      where: { OR: [{ email: { contains: q } }, { nickname: { contains: q } }] },
+      take: 5,
+      select: { id: true, email: true, nickname: true, role: true },
+    }),
+    prisma.job.findMany({
+      where: { OR: [{ title: { contains: q } }, { company: { contains: q } }] },
+      take: 5,
+      select: { id: true, title: true, company: true, status: true },
+    }),
+    prisma.advertiserProfile.findMany({
+      where: {
+        OR: [
+          { businessName: { contains: q } },
+          { businessNumber: { contains: q } },
+          { representative: { contains: q } },
+        ],
+      },
+      take: 5,
+      select: { id: true, businessName: true, businessNumber: true, verified: true },
+    }),
+  ]);
+  return { users, jobs, advertisers };
+}
+
 export async function deleteBoard(boardId: string) {
   await requireAdmin();
   const postCount = await prisma.communityPost.count({ where: { boardId } });

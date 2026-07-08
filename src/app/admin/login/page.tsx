@@ -32,21 +32,28 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        {/* 로고 */}
+    <div className="admin-scene min-h-screen flex items-center justify-center p-4">
+      {/* 사이드바 없는 독립 로그인 카드 */}
+      <div className="w-full max-w-[400px] rounded-2xl bg-navy-850/90 border border-line shadow-card p-8">
+        {/* 로고 — sample-01 사이드바의 크라운 로고 블록(그라데이션 gold→brand)을 중앙 배치 */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl overflow-hidden mb-4">
-            <img src="/logo/logo-main.png" alt="명품알바" className="w-full h-full object-cover" />
+          <div className="inline-flex flex-col items-center">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gold to-brand flex items-center justify-center shadow-glow mb-4">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 text-navy-950" fill="currentColor">
+                <path d="M2.6 18 4.3 7.6l4.5 4.4L12 5l3.2 7 4.5-4.4L21.4 18Z" />
+                <rect x="3.6" y="19.2" width="16.8" height="2" rx="1" />
+              </svg>
+            </div>
+            <div className="text-[20px] font-bold tracking-tight text-white leading-none">명품알바</div>
+            <div className="text-[10px] tracking-[.22em] text-gold mt-1.5">PREMIUM ALBA</div>
           </div>
-          <h1 className="text-xl font-bold text-white">명품알바 관리자</h1>
-          <p className="text-sm text-slate-400 mt-1">관리자 계정으로 로그인하세요</p>
+          <p className="text-sm text-mute mt-4">관리자 계정으로 로그인하세요</p>
         </div>
 
         {/* 로그인 폼 */}
-        <form onSubmit={handleSubmit} className="bg-slate-800 rounded-2xl p-6 space-y-4 border border-slate-700">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+            <div className="rounded-lg bg-red-500/15 border border-red-500/30 px-4 py-3 text-sm text-red-400">
               {error}
             </div>
           )}
@@ -58,7 +65,7 @@ export default function AdminLoginPage() {
               type="text"
               required
               placeholder="관리자 아이디"
-              className="w-full rounded-lg bg-slate-700 border border-slate-600 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full rounded-lg bg-navy-850 border border-line px-4 py-3 text-slate-200 placeholder:text-mute focus:border-brand/60 focus:outline-none"
             />
           </div>
 
@@ -69,20 +76,20 @@ export default function AdminLoginPage() {
               type="password"
               required
               placeholder="비밀번호"
-              className="w-full rounded-lg bg-slate-700 border border-slate-600 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full rounded-lg bg-navy-850 border border-line px-4 py-3 text-slate-200 placeholder:text-mute focus:border-brand/60 focus:outline-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-orange-500 py-3 text-white font-bold hover:bg-orange-600 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full rounded-lg bg-brand py-3 text-navy-950 font-bold shadow-glow hover:bg-brand-soft active:scale-[0.98] transition-all disabled:opacity-50"
           >
             {loading ? "로그인 중..." : "관리자 로그인"}
           </button>
         </form>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
+        <p className="text-center text-xs text-mute mt-6">
           관리자 권한이 없는 계정은 로그인할 수 없습니다
         </p>
       </div>

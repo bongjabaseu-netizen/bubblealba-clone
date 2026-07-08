@@ -16,6 +16,9 @@ const ALL_CATEGORIES = [
 export function CategoryIcons() {
   const pathname = usePathname();
 
+  // 홈(구인구직 메인)에서는 카테고리 바로가기 숨김 — 다른 페이지에서는 유지
+  if (pathname === "/") return null;
+
   // 현재 페이지와 같은 카테고리는 제외
   const filtered = ALL_CATEGORIES.filter((c) => {
     if (c.href === "/") return pathname !== "/";

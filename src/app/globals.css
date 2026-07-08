@@ -111,6 +111,35 @@
   --radius-14px: 0.875rem;
 }
 
+/* ============================================ */
+/* 관리자 다크 테마 토큰 — sample-01 디자인       */
+/* 다크 네이비 + 오렌지(brand) + 골드 포인트      */
+/* /admin 전용. 일반 사용자 UI에서 사용 금지       */
+/* ============================================ */
+@theme {
+  --color-navy-950: #0d1526;
+  --color-navy-900: #111c33;
+  --color-navy-850: #16233f;
+  --color-navy-800: #1b2b4d;
+  --color-navy-700: #24365e;
+  --color-line: #20304f;
+  --color-brand: #ff7a1a;      /* sample-01의 accent — shadcn --color-accent 충돌 회피용 개명 */
+  --color-brand-soft: #ff9a4d;
+  --color-brand-dim: #a34d0e;
+  --color-gold: #e8b64c;
+  --color-mute: #7d8db1;
+  --shadow-glow: 0 0 24px rgba(255, 122, 26, 0.18);
+  --shadow-card: 0 6px 18px rgba(4, 9, 20, 0.45);
+}
+
+/* 관리자 배경 분위기: 네이비 위 오렌지/골드 은은한 광원 */
+.admin-scene {
+  background:
+    radial-gradient(900px 420px at 85% -10%, rgba(255, 122, 26, 0.08), transparent 60%),
+    radial-gradient(700px 380px at -10% 110%, rgba(232, 182, 76, 0.06), transparent 60%),
+    #0d1526;
+}
+
 :root {
   /* bubblealba 라이트 모드 */
   --bb-bg-white: #fff;

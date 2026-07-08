@@ -3,6 +3,20 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
+
+/** 관리자 여부 확인 — admin.ts requireAdmin과 동일 정책 (JWT role 우선, DB fallback) */
+async function isAdmin() {
+  const session = await auth();
+  if (!session?.user?.id) return false;
+  const tokenRole = (session.user as { role?: string } | undefined)?.role;
+  if (tokenRole === "ADMIN") return true;
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  return user?.role === "ADMIN";
+}
 
 /** 광고주 인증 헬퍼 */
 async function requireAdvertiser() {
@@ -130,33 +144,64 @@ export async function createBid(formData: FormData) {
   }
 }
 
-/** 관리자: 입찰 승인 */
+/** 관리자: 입찰 승인 — 30일 게재 확정 + 입찰자 알림
+ * PENDING 가드를 조건부 updateMany로 원자화 — 관리자 2명 동시 처리 시 이중 알림/상태 충돌 방지 */
 export async function adminApproveBid(bidId: string) {
-  const session = await auth();
-  if ((session?.user as any)?.role !== "ADMIN") return { error: "권한 없음" };
+  if (!(await isAdmin())) return { error: "관리자 권한이 필요합니다" };
 
-  const bid = await prisma.adBid.findUnique({ where: { id: bidId } });
-  if (!bid || bid.status !== "PENDING") return { error: "처리할 수 없는 입찰입니다" };
-
-  await prisma.adBid.update({
+  const bid = await prisma.adBid.findUnique({
     where: { id: bidId },
+    include: { job: { select: { title: true } } },
+  });
+  if (!bid) return { error: "처리할 수 없는 입찰입니다" };
+
+  // PENDING인 경우에만 원자적으로 갱신 (count 0 = 이미 다른 관리자가 처리함)
+  const { count } = await prisma.adBid.updateMany({
+    where: { id: bidId, status: "PENDING" },
     data: {
       status: "APPROVED",
       startDate: new Date(),
       endDate: new Date(Date.now() + 30 * 86400000),
     },
   });
+  if (count === 0) return { error: "이미 처리된 입찰입니다" };
+
+  await prisma.notification.create({
+    data: {
+      type: "SYSTEM",
+      title: "광고 입찰 승인",
+      body: `'${bid.job.title}' 입찰(${bid.totalAmount.toLocaleString()}원)이 승인되었습니다. 광고가 30일간 게재됩니다.`,
+      userId: bid.userId,
+    },
+  });
+  revalidatePath("/admin/bids");
   return { success: true };
 }
 
-/** 관리자: 입찰 거절 */
+/** 관리자: 입찰 거절 — 입찰자 알림 포함 (승인과 동일하게 원자적 PENDING 가드) */
 export async function adminRejectBid(bidId: string) {
-  const session = await auth();
-  if ((session?.user as any)?.role !== "ADMIN") return { error: "권한 없음" };
+  if (!(await isAdmin())) return { error: "관리자 권한이 필요합니다" };
 
-  await prisma.adBid.update({
+  const bid = await prisma.adBid.findUnique({
     where: { id: bidId },
+    include: { job: { select: { title: true } } },
+  });
+  if (!bid) return { error: "처리할 수 없는 입찰입니다" };
+
+  const { count } = await prisma.adBid.updateMany({
+    where: { id: bidId, status: "PENDING" },
     data: { status: "REJECTED" },
   });
+  if (count === 0) return { error: "이미 처리된 입찰입니다" };
+
+  await prisma.notification.create({
+    data: {
+      type: "SYSTEM",
+      title: "광고 입찰 거절",
+      body: `'${bid.job.title}' 입찰(${bid.totalAmount.toLocaleString()}원)이 거절되었습니다.`,
+      userId: bid.userId,
+    },
+  });
+  revalidatePath("/admin/bids");
   return { success: true };
 }
