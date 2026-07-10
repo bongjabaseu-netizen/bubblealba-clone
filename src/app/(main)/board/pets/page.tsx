@@ -47,6 +47,9 @@ export default async function PetsBoardPage() {
   });
   while (bannerIdx < petBanners.length) feedItems.push({ kind: "ad", ad: petBanners[bannerIdx++] });
 
+  // 인기글 — 좋아요순 상위 6개(3x2 그리드) (사용자 지시 2026-07-10)
+  const popularPosts = [...posts].sort((a, b) => b.likes - a.likes).slice(0, 6);
+
   return (
     <>
       {/* 공지사항 진입 — 카테고리 스트립 밑 한줄 버튼 (사용자 지시 2026-07-10) */}
@@ -64,7 +67,39 @@ export default async function PetsBoardPage() {
         </Link>
       </div>
 
-      {/* 애견샵 광고 배너는 아래 SNS 피드에 스폰서 카드로 인터리브됨 (사용자 지시 2026-07-10) */}
+      {/* 인기글 3x2 그리드 (좋아요순 6개) — 상단 하이라이트, 아래 SNS 피드는 그대로 (사용자 지시 2026-07-10) */}
+      {popularPosts.length > 0 && (
+        <div className="px-15px mt-12px">
+          <h2 className="font-15sb text-font-black mb-8px flex items-center gap-4px">🔥 인기글</h2>
+          <div className="grid grid-cols-3 gap-6px">
+            {popularPosts.map((post) => {
+              const img: string | null = (() => {
+                try { const arr = JSON.parse(post.images || "[]"); return arr[0] ?? null; } catch { return null; }
+              })();
+              return (
+                <Link
+                  key={post.id}
+                  href={`/community/detail/${post.id}`}
+                  className="relative block rounded-10px overflow-hidden bg-bg-gray-50 aspect-square active-bg"
+                >
+                  {img ? (
+                    <img src={img} alt={post.title} className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl">🐾</div>
+                  )}
+                  {/* 좋아요 오버레이 */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-6px py-4px">
+                    <span className="flex items-center gap-2px font-10rg text-white">
+                      <svg className="w-3 h-3 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21s-7.55-4.63-10.1-9.2C.35 8.4 2.05 5 5.35 5c2.02 0 3.3 1.14 4.15 2.34l.5.7.5-.7C11.35 6.14 12.63 5 14.65 5c3.3 0 5 3.4 3.45 6.8C19.55 16.37 12 21 12 21z" /></svg>
+                      {post.likes.toLocaleString()}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 헤더 */}
       <div className="px-15px mt-12px">

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-10 (디자인 — 애견 게시판 상단 인기글 3x2 그리드)
+
+- [추가] `/board/pets` 상단에 **🔥 인기글 3칸×2줄(6개)** 그리드 — 좋아요순 상위 6개(썸네일+❤ 오버레이). `board/pets/page.tsx` — `popularPosts = posts 정렬(likes desc).slice(0,6)`. 아래 SNS 피드(글+스폰서 인터리브)는 그대로 유지
+- [검증] tsc 0, 빌드. puppeteer로 grid-cols 3·타일 6·좋아요 내림차순(342→63)·피드 12카드 유지 확인, 스크린샷. 보드 08 재캡처·재발행
+
 ## 2026-07-10 (디자인 — 카테고리 아이콘 라인 아이콘화)
 
 - [수정] 카테고리 바로가기 스트립 이모지(💼🏠⚖️🐶💇🔮) → **lucide 라인 아이콘 + 카테고리별 소프트 톤 원형칩**. `CategoryIcons.tsx` — Briefcase/Home/Scale/Dog/Scissors/Sparkles, tint(orange/emerald/sky/amber/rose/violet-50). 화이트리스트/현재카테고리 제외 로직 유지. (Pixabay 아이콘은 API 키 미설정이라 lucide로 통일)
