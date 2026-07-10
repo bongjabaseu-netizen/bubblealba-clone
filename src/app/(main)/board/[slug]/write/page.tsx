@@ -73,7 +73,7 @@ export default function BoardWritePage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 h-button rounded-14px bg-primary font-14sb text-white active-bg disabled:opacity-50"
+            className="flex-1 h-button rounded-14px bg-font-black font-14sb text-white active-bg disabled:opacity-50"
           >
             {loading ? "등록 중..." : "등록하기"}
           </button>

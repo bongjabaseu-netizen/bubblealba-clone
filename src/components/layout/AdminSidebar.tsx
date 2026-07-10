@@ -23,6 +23,10 @@ import {
   Gavel,
   CreditCard,
   ShieldCheck,
+  Dog,
+  Scale,
+  Scissors,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -57,6 +61,15 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/boards", label: "게시판관리", icon: Layers },
       { href: "/admin/realestate", label: "부동산매물", icon: Building2 },
       { href: "/admin/choicetalk", label: "초이스톡", icon: MessageCircle },
+    ],
+  },
+  {
+    label: "게시판별 관리",
+    items: [
+      { href: "/admin/board/pets", label: "애견자랑 관리", icon: Dog },
+      { href: "/admin/board/legal-consult", label: "법률상담 관리", icon: Scale },
+      { href: "/admin/board/beauty", label: "미용 관리", icon: Scissors },
+      { href: "/admin/board/fortune", label: "운세 관리", icon: Sparkles },
     ],
   },
   {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { DesignPicker } from "@/components/dev/DesignPicker";
 
 export const metadata: Metadata = {
   title: "명품알바 - PREMIUM ALBA",
@@ -33,6 +34,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>
+        {/* 디자인 픽커 — localhost 에서만 활성 (배포 도메인에선 자동 무력화) */}
+        <DesignPicker />
       </body>
     </html>
   );

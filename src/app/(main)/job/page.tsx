@@ -1,22 +1,6 @@
 import Link from "next/link";
 import { getJobs } from "@/lib/actions/jobs";
-
-const REGIONS = [
-  "서울", "경기", "인천", "부산", "대구", "광주", "대전",
-  "울산", "세종", "강원",
-];
-
-const CATEGORIES = [
-  { id: "room", name: "룸싸롱", icon: "🎤" },
-  { id: "karaoke", name: "가라오케", icon: "🎶" },
-  { id: "hyperblick", name: "하이퍼블릭", icon: "✨" },
-  { id: "massage", name: "마사지", icon: "💆" },
-  { id: "bar", name: "바", icon: "🍸" },
-  { id: "ten", name: "텐카페", icon: "🍷" },
-  { id: "song", name: "노래주점", icon: "🎼" },
-  { id: "office", name: "오피스텔", icon: "🏢" },
-  { id: "etc", name: "기타", icon: "📋" },
-];
+import { JobFilterSelect } from "../components/JobFilterSelect";
 
 function safeJsonParse<T>(val: unknown, fallback: T): T {
   if (Array.isArray(val)) return val as T;
@@ -26,20 +10,13 @@ function safeJsonParse<T>(val: unknown, fallback: T): T {
   return fallback;
 }
 
-function relativeTime(date: Date): string {
-  const diff = Date.now() - date.getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "방금 전";
-  if (mins < 60) return `${mins}분 전`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}시간 전`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}일 전`;
-  return `${Math.floor(days / 30)}개월 전`;
-}
-
-export default async function JobListPage() {
-  const jobs = await getJobs();
+export default async function JobListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ region?: string; category?: string }>;
+}) {
+  const { region, category } = await searchParams;
+  const jobs = await getJobs({ region, category });
 
   return (
     <div className="px-15px py-16px space-y-16px">
@@ -48,37 +25,8 @@ export default async function JobListPage() {
         <p className="font-13rg text-font-gray">총 {jobs.length}개 공고</p>
       </div>
 
-      {/* 지역 필터 */}
-      <div>
-        <h3 className="font-14sb text-font-black mb-8px">지역</h3>
-        <div className="flex flex-wrap gap-6px">
-          {REGIONS.map((r) => (
-            <Link
-              key={r}
-              href={`/job/${encodeURIComponent(r)}/전체`}
-              className="h-32px px-12px flex items-center rounded-full border border-line-gray-20 font-13rg text-font-black active-bg"
-            >
-              {r}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* 업종 필터 */}
-      <div>
-        <h3 className="font-14sb text-font-black mb-8px">업종</h3>
-        <div className="flex flex-wrap gap-6px">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              className="h-36px px-12px flex items-center gap-6px rounded-10px border border-line-gray-20 font-13rg text-font-black active-bg"
-            >
-              <span>{c.icon}</span>
-              {c.name}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* 지역·업종 필터 — 버튼 → 네이티브 select 2개 한 줄 (사용자 지시 2026-07-10) */}
+      <JobFilterSelect />
 
       {/* 정렬 */}
       <div className="flex gap-8px">
@@ -91,29 +39,34 @@ export default async function JobListPage() {
       <div className="space-y-1px bg-line-gray-20">
         {jobs.map((job) => {
           const tags: string[] = safeJsonParse(job.tags as unknown, []);
+          const images: string[] = safeJsonParse(job.images as unknown, []);
           return (
             <Link key={job.id} href={`/job/detail/${job.id}`} className="block active-bg bg-bg-white px-15px py-14px">
-              <div className="flex gap-6px mb-6px flex-wrap">
-                {tags.slice(0, 2).map((t) => (
-                  <span key={t} className="font-11rg px-6px py-1px rounded-4px bg-primary/10 text-primary">{t}</span>
-                ))}
-              </div>
-              <h3 className="font-15sb text-font-black line-clamp-2 mb-6px">{job.title}</h3>
-              <div className="flex items-center gap-4px font-12rg text-font-gray mb-4px">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                {job.region} {job.city}
-              </div>
-              <div className="font-14sb text-primary mb-6px">{job.wage}</div>
-              <div className="flex items-center gap-10px font-12rg text-font-disabled">
-                <span className="flex items-center gap-2px">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-                  {(job.views ?? 0).toLocaleString()}
-                </span>
-                <span className="flex items-center gap-2px">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                  {job._count?.favorites ?? 0}
-                </span>
-                <span className="ml-auto">{relativeTime(new Date(job.createdAt))}</span>
+              <div className="flex gap-15px">
+                {/* 왼쪽 정사각 프로필 썸네일 (메인페이지 공고와 동일) */}
+                <div
+                  className="h-70px w-70px shrink-0 rounded-14px bg-bg-gray-50 bg-cover bg-center"
+                  style={{ backgroundImage: images[0] ? `url(${images[0]})` : undefined }}
+                />
+                {/* 카드 우측 텍스트 — 5줄 → 3줄로 통일: 태그 / 제목(1줄) / 지역·급여 (사용자 지시 2026-07-10, 조회수·좋아요·시간 줄 제거) */}
+                <div className="min-w-0 flex-1">
+                  {/* ① 태그(광고 문구) */}
+                  <div className="flex gap-6px mb-6px flex-wrap">
+                    {tags.slice(0, 2).map((t) => (
+                      // 태그 칩 — 로즈(급여 그린과 대비). 색상 샘플 14번 선택 (사용자 지시 2026-07-10)
+                      <span key={t} className="font-11rg px-6px py-1px rounded-4px bg-rose-100 text-rose-600">{t}</span>
+                    ))}
+                  </div>
+                  {/* ② 제목 — 1줄 고정으로 모든 카드 높이 정렬 */}
+                  <h3 className="font-15sb text-font-black line-clamp-1 mb-6px">{job.title}</h3>
+                  {/* ③ 지역(좌) · 급여(우) 한 줄 */}
+                  <div className="flex items-center gap-4px font-12rg text-font-gray">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                    <span className="truncate">{job.region} {job.city}</span>
+                    {/* 급여 — 머니그린. 색상 샘플 14번 선택 (사용자 지시 2026-07-10) */}
+                    <span className="ml-auto shrink-0 font-14sb text-green-600">{job.wage}</span>
+                  </div>
+                </div>
               </div>
             </Link>
           );

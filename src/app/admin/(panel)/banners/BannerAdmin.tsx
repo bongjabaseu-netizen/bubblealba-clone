@@ -8,6 +8,7 @@ import { adminCreateBanner, adminToggleBanner, adminDeleteBanner, adminUpdateBan
 import { ImageUploader } from "@/components/ImageUploader";
 
 const BANNER_TYPES = [
+  { value: "HERO_SLIDE", label: "홈 상단 슬라이딩 (마퀴)", desc: "홈 최상단 히어로 마퀴. 등록한 배너들이 왼쪽으로 무한 슬라이딩됩니다. 권장 600×150px (4:1). 표시 높이 80px. 활성 개수만큼 자동 슬라이딩(갯수 자유롭게 추가/삭제)." },
   { value: "IMAGE_TOP", label: "홈 최상단 (한 줄 2개, 600×150)", desc: "홈 상단 가로 배너. 권장 600×150px (가로세로 4:1). 한 줄에 2개씩 채워지고 계속 추가 가능. 표시 높이 75px 고정." },
   { value: "IMAGE_MID", label: "홈 둘째줄 (한 줄 3개, 400×150)", desc: "홈 중간 가로 배너. 권장 400×150px (약 8:3). 한 줄에 3개씩. 표시 높이 75px 고정." },
   { value: "IMAGE_BOT", label: "홈 셋째줄~ (한 줄 4개, 300×150)", desc: "홈 하단 가로 배너. 권장 300×150px (2:1). 한 줄에 4개씩 채워지며 아래로 계속 늘어남. 표시 높이 75px 고정." },
@@ -92,6 +93,7 @@ export function BannerAdmin({ banners }: { banners: Banner[] }) {
       <div className="rounded-2xl bg-navy-850/90 border border-line shadow-card p-4">
         <h3 className="font-semibold text-white text-sm mb-2">📐 배너 이미지 사이즈 안내</h3>
         <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
+          <div>• 홈 상단 슬라이딩(마퀴): <b className="text-brand">600×150px</b> (좌슬라이딩·갯수 자유)</div>
           <div>• 홈 최상단: <b className="text-brand">600×150px</b> (한 줄 2개)</div>
           <div>• 홈 둘째줄: <b className="text-brand">400×150px</b> (한 줄 3개)</div>
           <div>• 홈 셋째줄~: <b className="text-brand">300×150px</b> (한 줄 4개·계속 추가)</div>

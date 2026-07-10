@@ -54,3 +54,7 @@ prisma/dev.db-journal
 
 # 삭제 대기 임시 빌드 폴더 (rm 가드에 막혀 잔류)
 /.next.old-dev/
+
+# 디자인 보드 재생성물 (스크립트는 커밋, 캡처·HTML은 재생성물이라 제외)
+/tools/design-board/shots/
+/tools/design-board/design-board.html

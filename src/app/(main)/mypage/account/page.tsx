@@ -73,7 +73,7 @@ export default function AccountPage() {
         <button
           onClick={handleSave}
           disabled={loading}
-          className="h-44px px-20px rounded-10px bg-primary text-white font-15sb disabled:opacity-50"
+          className="h-44px px-20px rounded-10px bg-font-black text-white font-15sb disabled:opacity-50"
         >
           {loading ? "저장 중..." : "저장"}
         </button>

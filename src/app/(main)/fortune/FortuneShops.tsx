@@ -141,7 +141,7 @@ export function FortuneShops() {
           </dl>
 
           <a href={`tel:${selectedShop.phone}`}
-            className="flex w-full h-44px rounded-10px bg-primary text-white font-15sb items-center justify-center gap-4px mb-12px">
+            className="flex w-full h-44px rounded-10px bg-font-black text-white font-15sb items-center justify-center gap-4px mb-12px">
             📞 전화 문의
           </a>
 

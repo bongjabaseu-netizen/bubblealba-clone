@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ClipboardList, PlusCircle, Bell, User } from "lucide-react";
+import { Home, Users, LayoutGrid, Bell, User } from "lucide-react";
 import { NotificationBadge } from "./NotificationBadge";
 
+// 5탭: 홈/커뮤니티/콘텐츠(가운데)/알림/내정보 — 콘텐츠는 애견분양 게시판이 메인 (사용자 지시 2026-07-10, 통합 때 빠진 콘텐츠 탭 복원)
 const TABS = [
   { href: "/", icon: Home, label: "홈", matchPrefix: ["/", "/job"] },
-  { href: "/community", icon: ClipboardList, label: "커뮤니티", matchPrefix: ["/community"] },
-  { href: "/community/write", icon: PlusCircle, label: "글쓰기", matchPrefix: ["/community/write"] },
+  { href: "/community", icon: Users, label: "커뮤니티", matchPrefix: ["/community"] },
+  { href: "/board/pets", icon: LayoutGrid, label: "콘텐츠", matchPrefix: ["/board", "/fortune", "/choicetalk"] },
   { href: "/notification", icon: Bell, label: "알림", matchPrefix: ["/notification"] },
   { href: "/mypage", icon: User, label: "내정보", matchPrefix: ["/mypage"] },
 ];
@@ -33,20 +34,24 @@ export function BottomTab() {
             <Link
               key={tab.href}
               href={tab.href}
-              className="group relative flex h-48px flex-1 items-center justify-center active-bg"
+              className="group relative flex h-[52px] flex-1 flex-col items-center justify-center gap-[2px] active-bg"
               aria-label={`go ${tab.label}`}
             >
               <div className="relative">
                 <Icon
                   className={
                     active
-                      ? "h-7 w-7 fill-font-black stroke-font-black"
-                      : "h-7 w-7 stroke-font-black"
+                      ? "h-6 w-6 fill-font-black stroke-font-black"
+                      : "h-6 w-6 stroke-font-black"
                   }
                   strokeWidth={1.8}
                 />
                 {tab.href === "/notification" && <NotificationBadge />}
               </div>
+              {/* 아이콘 밑 라벨 — 어디로 가는지 표기 (사용자 지시 2026-07-09) */}
+              <span className={active ? "text-[10px] leading-none font-semibold text-font-black" : "text-[10px] leading-none text-font-gray"}>
+                {tab.label}
+              </span>
             </Link>
           );
         })}

@@ -83,7 +83,7 @@ export async function updateJobStatus(jobId: string, status: "ACTIVE" | "REJECTE
 export async function getAdminPosts() {
   await requireAdmin();
   return prisma.communityPost.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
     include: {
       author: { select: { nickname: true } },
       board: { select: { name: true } },
@@ -95,6 +95,102 @@ export async function deleteAdminPost(postId: string) {
   await requireAdmin();
   await prisma.communityPost.delete({ where: { id: postId } });
   revalidatePath("/admin/posts");
+  revalidatePath("/community");
+  return { success: true };
+}
+
+/** 관리자: 커뮤니티 공지/이벤트 등록 (고정글로 최상단 노출) */
+export async function adminCreateNotice(formData: FormData) {
+  const session = await requireAdmin();
+  const title = ((formData.get("title") as string) ?? "").trim();
+  const content = ((formData.get("content") as string) ?? "").trim();
+  if (!title || !content) return { error: "제목과 내용을 입력해주세요" };
+  const board = await prisma.board.findFirst({ orderBy: { createdAt: "asc" } });
+  if (!board) return { error: "게시판이 없습니다" };
+  await prisma.communityPost.create({
+    data: { title, content, images: "[]", authorId: session.user!.id!, boardId: board.id, pinned: true },
+  });
+  revalidatePath("/admin/posts");
+  revalidatePath("/community");
+  return { success: true };
+}
+
+/** 관리자: 게시판별 관리 — 해당 게시판 글 목록(고정 우선) + 게시판 정보 (사용자 지시 2026-07-10) */
+export async function getAdminBoardPosts(slug: string) {
+  await requireAdmin();
+  const board = await prisma.board.findUnique({ where: { slug } });
+  if (!board) return null;
+  const posts = await prisma.communityPost.findMany({
+    where: { boardId: board.id },
+    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
+    include: { author: { select: { nickname: true } } },
+  });
+  return { board: { slug: board.slug, name: board.name }, posts };
+}
+
+/** 관리자: 게시판에 글/공지 작성 (pinned=true 면 공지) */
+export async function adminCreateBoardPost(slug: string, formData: FormData) {
+  const session = await requireAdmin();
+  const title = ((formData.get("title") as string) ?? "").trim();
+  const content = ((formData.get("content") as string) ?? "").trim();
+  const pinned = formData.get("pinned") === "true";
+  if (!title || !content) return { error: "제목과 내용을 입력해주세요" };
+  const board = await prisma.board.findUnique({ where: { slug } });
+  if (!board) return { error: "게시판이 없습니다" };
+  await prisma.communityPost.create({
+    data: { title, content, images: "[]", authorId: session.user!.id!, boardId: board.id, pinned },
+  });
+  revalidatePath(`/admin/board/${slug}`);
+  revalidatePath(`/board/${slug}`);
+  revalidatePath(`/board/${slug}/notice`);
+  return { success: true };
+}
+
+/** 관리자: 특정 게시판 공지 등록 (pinned 글). 애견자랑 등 게시판별 공지사항 페이지용 (사용자 지시 2026-07-10) */
+export async function createBoardNotice(boardSlug: string, formData: FormData) {
+  const session = await requireAdmin();
+  const title = ((formData.get("title") as string) ?? "").trim();
+  const content = ((formData.get("content") as string) ?? "").trim();
+  if (!title || !content) return { error: "제목과 내용을 입력해주세요" };
+  const board = await prisma.board.findUnique({ where: { slug: boardSlug } });
+  if (!board) return { error: "게시판이 없습니다" };
+  await prisma.communityPost.create({
+    data: { title, content, images: "[]", authorId: session.user!.id!, boardId: board.id, pinned: true },
+  });
+  revalidatePath(`/board/${boardSlug}/notice`);
+  revalidatePath(`/board/${boardSlug}`);
+  return { success: true };
+}
+
+/** 관리자: 게시판 공지 삭제 */
+export async function deleteBoardNotice(postId: string, boardSlug: string) {
+  await requireAdmin();
+  await prisma.communityPost.delete({ where: { id: postId } });
+  revalidatePath(`/board/${boardSlug}/notice`);
+  revalidatePath(`/board/${boardSlug}`);
+  return { success: true };
+}
+
+/** 관리자: 게시글 고정/해제 토글 */
+export async function adminTogglePinPost(postId: string) {
+  await requireAdmin();
+  const post = await prisma.communityPost.findUnique({ where: { id: postId }, select: { pinned: true } });
+  if (!post) return { error: "게시글을 찾을 수 없습니다" };
+  await prisma.communityPost.update({ where: { id: postId }, data: { pinned: !post.pinned } });
+  revalidatePath("/admin/posts");
+  revalidatePath("/community");
+  return { success: true };
+}
+
+/** 관리자: 게시글 제목/내용 수정 */
+export async function adminUpdatePost(postId: string, formData: FormData) {
+  await requireAdmin();
+  const title = ((formData.get("title") as string) ?? "").trim();
+  const content = ((formData.get("content") as string) ?? "").trim();
+  if (!title || !content) return { error: "제목과 내용을 입력해주세요" };
+  await prisma.communityPost.update({ where: { id: postId }, data: { title, content } });
+  revalidatePath("/admin/posts");
+  revalidatePath("/community");
   return { success: true };
 }
 

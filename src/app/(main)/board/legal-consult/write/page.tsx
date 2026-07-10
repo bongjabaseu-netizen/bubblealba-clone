@@ -83,7 +83,7 @@ export default function LegalWritePage() {
           <button type="button" onClick={() => router.push("/board/legal-consult")}
             className="flex-1 h-button rounded-14px border border-line-gray-50 font-14sb text-font-gray active-bg">취소</button>
           <button type="submit" disabled={loading}
-            className="flex-1 h-button rounded-14px bg-primary font-14sb text-white active-bg disabled:opacity-50">
+            className="flex-1 h-button rounded-14px bg-font-black font-14sb text-white active-bg disabled:opacity-50">
             {loading ? "등록 중..." : "상담 등록"}
           </button>
         </div>

@@ -12,7 +12,7 @@ export async function getPosts(boardSlug?: string) {
 
   return prisma.communityPost.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ pinned: "desc" }, { createdAt: "desc" }], // 고정 공지 최상단
     include: {
       author: { select: { nickname: true, image: true } },
       board: { select: { name: true, slug: true } },

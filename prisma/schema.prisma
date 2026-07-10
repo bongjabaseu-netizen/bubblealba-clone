@@ -209,12 +209,14 @@ model CommunityPost {
 
   views     Int      @default(0)
   likes     Int      @default(0)
+  pinned    Boolean  @default(false) // 관리자 고정 공지/이벤트 (커뮤니티 최상단)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([authorId])
   @@index([boardId])
+  @@index([pinned])
 }
 
 model Comment {
@@ -465,6 +467,7 @@ enum BannerType {
   BEAUTY_SALON   // 미용실 배너
   BEAUTY_NAIL    // 네일아트 배너
   BEAUTY_SURGERY // 성형 배너
+  HERO_SLIDE     // 홈 상단 히어로 마퀴 (좌슬라이딩, 갯수 가변)
 }
 
 // ========== Ad Bidding ==========

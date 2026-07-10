@@ -20,6 +20,7 @@ export async function getBannerAds() {
     beautySalon: banners.filter((b) => b.type === "BEAUTY_SALON"),
     beautyNail: banners.filter((b) => b.type === "BEAUTY_NAIL"),
     beautySurgery: banners.filter((b) => b.type === "BEAUTY_SURGERY"),
+    heroSlide: banners.filter((b) => b.type === "HERO_SLIDE"), // 홈 상단 히어로 마퀴
   };
 }
 
