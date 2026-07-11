@@ -38,29 +38,7 @@ export default async function LegalConsultPage() {
       {/* 전문 법무사 쇼케이스 — 1명씩 슬라이딩 + 5명 썸네일 (사용자 지시 2026-07-11) */}
       <LegalExperts />
 
-      {/* 법률사무소 이미지 배너 3x2 */}
-      {legalBanners.length > 0 && (
-        <div className="px-15px mt-8px space-y-6px">
-          <div className="grid grid-cols-3 gap-6px">
-            {legalBanners.slice(0, 3).map((b) => (
-              <a key={b.id} href={b.linkUrl && b.linkUrl !== "#" ? b.linkUrl : `/banner/${b.id}`} className="block rounded-10px overflow-hidden bg-bg-gray-50 aspect-square">
-                <img src={b.imageUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
-              </a>
-            ))}
-          </div>
-          {legalBanners.length > 3 && (
-            <div className="grid grid-cols-3 gap-6px">
-              {legalBanners.slice(3, 6).map((b) => (
-                <a key={b.id} href={b.linkUrl && b.linkUrl !== "#" ? b.linkUrl : `/banner/${b.id}`} className="block rounded-10px overflow-hidden bg-bg-gray-50 aspect-square">
-                  <img src={b.imageUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 헤더 */}
+      {/* 헤더 — 상담 목록을 광고배너 위로 올려 히어로 바로 아래 노출 (사용자 지시 2026-07-11) */}
       <div className="px-15px mt-12px">
         <div className="flex items-center justify-between">
           <div>
@@ -145,6 +123,28 @@ export default async function LegalConsultPage() {
           </li>
         )}
       </ul>
+
+      {/* 법률사무소 이미지 배너 3x2 — 상담 목록 아래로 이동 (사용자 지시 2026-07-11) */}
+      {legalBanners.length > 0 && (
+        <div className="px-15px mt-16px space-y-6px">
+          <div className="grid grid-cols-3 gap-6px">
+            {legalBanners.slice(0, 3).map((b) => (
+              <a key={b.id} href={b.linkUrl && b.linkUrl !== "#" ? b.linkUrl : `/banner/${b.id}`} className="block rounded-10px overflow-hidden bg-bg-gray-50 aspect-square">
+                <img src={b.imageUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
+              </a>
+            ))}
+          </div>
+          {legalBanners.length > 3 && (
+            <div className="grid grid-cols-3 gap-6px">
+              {legalBanners.slice(3, 6).map((b) => (
+                <a key={b.id} href={b.linkUrl && b.linkUrl !== "#" ? b.linkUrl : `/banner/${b.id}`} className="block rounded-10px overflow-hidden bg-bg-gray-50 aspect-square">
+                  <img src={b.imageUrl!} alt="" className="w-full h-full object-cover" loading="lazy" />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
