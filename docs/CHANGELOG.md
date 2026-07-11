@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-11 (아키텍처 — REST API + 페이지네이션 레이어 Phase 1, 확장성)
+
+- [설계] 뮤테이션은 서버액션 유지, **목록·검색·필터(커지는 곳)만 REST API + 페이지네이션**. 데이터 증가 시 전량 로드(findMany-all) 병목 해소
+- [신규] `src/lib/pagination.ts` — `parsePage`(skip/take 클램프) + `paginate`(`{items,total,page,totalPages,hasMore}`)
+- [신규] REST API 라우트 6종: 공개 `GET /api/realestate`·`/api/jobs`·`/api/community`(페이지네이션+필터+검색), 관리자(ADMIN 인증) `GET /api/admin/users`·`/api/admin/posts`·`/api/admin/listings`
+- [배선] `/board/realestate` 목록을 `RealEstateList`(클라이언트)로 전환 — `/api/realestate` 12개씩 + **더보기**. 매물 많아져도 전량 로드 안 함
+- [검증] tsc 0, 빌드. API 응답(total/hasMore/필터/401 인증) + 부동산 페이지 API 호출·렌더 확인, 스크린샷
+- [Phase 2 예정] 관리자 테이블(회원·게시물·매물)을 위 API로 배선(페이지+검색 UI), 공개 공고·커뮤니티 목록 더보기 확장
+
 ## 2026-07-11 (디자인 — 부동산 페이지 다방 스타일 재편)
 
 - [수정] `/board/realestate` 사용자 페이지를 **다방 스타일 심플 리스트**로 재작성 — 광고 배너·탭·게시판·"매물 등록" 진입 제거. 카테고리 필터 칩 + 매물 카드(사진 좌측·가격 강조·보증금·스펙·위치) → **클릭 시 상세**. 지도 없음(원래 없었음)
