@@ -38,19 +38,27 @@ export function LegalExperts() {
           style={{ transform: `translateX(-${active * 100}%)` }}
         >
           {LAWYERS.map((l, i) => (
-            <div key={l.name} className="relative w-full h-full shrink-0 bg-[#0b0e14]">
-              {/* 인물 사진 — 우측 정렬(object-left = 이미지 좌측을 보여줘 인물이 프레임 우측에 위치) */}
-              <img
-                src={l.photo}
-                alt={`${l.name} 변호사`}
-                className="absolute inset-0 w-full h-full object-cover object-left-top"
-                loading={i === 0 ? "eager" : "lazy"}
-              />
-              {/* 좌측 텍스트 가독용 다크 스크림 (인물이 우측이라 좌측을 더 강하게) */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+            <div key={l.name} className="relative w-full h-full shrink-0 overflow-hidden bg-gradient-to-br from-[#0e2148] via-[#0b1a3a] to-[#081327]">
+              {/* 좌측 장식 도형 — 저울(정의) 엠블럼 워터마크 */}
+              <svg viewBox="0 0 24 24" className="absolute left-[6%] top-1/2 -translate-y-1/2 w-[180px] h-[180px] text-white/[0.05]" fill="none" stroke="currentColor" strokeWidth={1} aria-hidden>
+                <path d="M12 3v18M7 21h10M12 6l-7 2 3 6a3 3 0 0 1-6 0l3-6M12 6l7 2-3 6a3 3 0 0 0 6 0l-3-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {/* 우측 인물 존 (우측 58%) — 인물을 확실히 오른쪽으로, 좌측은 색상 패널 */}
+              <div className="absolute right-0 top-0 h-full w-[58%]">
+                <img
+                  src={l.photo}
+                  alt={`${l.name} 변호사`}
+                  className="w-full h-full object-cover object-[center_top]"
+                  loading={i === 0 ? "eager" : "lazy"}
+                />
+                {/* 좌측 페이드 — 인물 좌측을 색상 패널로 자연스럽게 연결 */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0b1a3a] via-[#0b1a3a]/30 to-transparent" />
+              </div>
 
               {/* 텍스트 (좌측) */}
               <div className="relative z-10 h-full flex flex-col justify-center px-18px">
+                {/* 액센트 바 도형 */}
+                <div className="w-[24px] h-[3px] rounded-full bg-[#5b8cff] mb-12px" />
                 <div className="flex items-center gap-6px mb-12px">
                   <span className="font-11rg tracking-wide text-white/65">당당하게 보여드리는 {FIRM}의 자신감</span>
                   <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded bg-white/15 font-10rg text-white tabular-nums">{i + 1}</span>
