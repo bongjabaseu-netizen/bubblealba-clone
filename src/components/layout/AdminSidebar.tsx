@@ -68,6 +68,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/board/pets", label: "애견자랑 관리", icon: Dog },
       { href: "/admin/board/legal-consult", label: "법률상담 관리", icon: Scale },
+      { href: "/admin/legal-consult", label: "법률상담 답변", icon: Gavel },
       { href: "/admin/board/beauty", label: "미용 관리", icon: Scissors },
       { href: "/admin/board/fortune", label: "운세 관리", icon: Sparkles },
     ],

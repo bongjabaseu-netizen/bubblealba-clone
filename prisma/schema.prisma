@@ -211,6 +211,11 @@ model CommunityPost {
   likes     Int      @default(0)
   pinned    Boolean  @default(false) // 관리자 고정 공지/이벤트 (커뮤니티 최상단)
 
+  // 법률상담 비밀글 — 제목만 공개, 본문/답변은 작성자·관리자(변호사)만 열람
+  isSecret   Boolean   @default(false)
+  answer     String?   // 변호사 답변 (비밀)
+  answeredAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

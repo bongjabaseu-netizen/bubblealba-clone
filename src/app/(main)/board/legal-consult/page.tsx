@@ -84,6 +84,31 @@ export default async function LegalConsultPage() {
       {/* 게시글 목록 */}
       <ul>
         {posts.map((post) => {
+          // 비밀 상담글 — 제목만 노출, 본문·작성자 숨김, 답변 상태만 표시
+          if (post.isSecret) {
+            const answered = !!post.answer;
+            return (
+              <li key={post.id} className="border-b border-line-gray-20">
+                <Link href={`/community/detail/${post.id}`} className="flex items-center gap-10px px-15px py-14px active-bg">
+                  <div className="w-9 h-9 rounded-full bg-bg-gray-50 flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4 text-font-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-15sb text-font-black line-clamp-1">{post.title}</h3>
+                    <div className="flex items-center gap-8px mt-4px font-12rg text-font-disabled">
+                      <span>비공개 상담</span>
+                      <span>·</span>
+                      <span>{relativeTime(post.createdAt)}</span>
+                    </div>
+                  </div>
+                  <span className={`shrink-0 font-12sb px-8px h-[24px] inline-flex items-center rounded-full ${answered ? "bg-emerald-50 text-emerald-600" : "bg-bg-gray-50 text-font-disabled"}`}>
+                    {answered ? "답변완료" : "답변대기"}
+                  </span>
+                </Link>
+              </li>
+            );
+          }
+
           const images: string[] = (() => { try { return JSON.parse(post.images || "[]"); } catch { return []; } })();
           return (
             <li key={post.id} className="border-b border-line-gray-20">

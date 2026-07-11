@@ -20,6 +20,7 @@ const PAGE_TITLES: { href: string; title: string }[] = [
   { href: "/admin/boards", title: "게시판관리" },
   { href: "/admin/board/pets", title: "애견자랑 관리" },
   { href: "/admin/board/legal-consult", title: "법률상담 관리" },
+  { href: "/admin/legal-consult", title: "법률상담 답변" },
   { href: "/admin/board/beauty", title: "미용 관리" },
   { href: "/admin/board/fortune", title: "운세 관리" },
   { href: "/admin/banners", title: "배너관리" },

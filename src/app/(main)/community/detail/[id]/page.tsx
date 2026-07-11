@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost } from "@/lib/actions/posts";
+import { auth } from "@/auth";
 import { CommentForm } from "./comment-form";
 
 function relativeTime(date: Date): string {
@@ -23,6 +24,14 @@ export default async function PostDetailPage({
   const { id } = await params;
   const post = await getPost(id);
   if (!post) notFound();
+
+  // 비밀 상담글 열람 권한 — 작성자 본인 또는 관리자(변호사)만 본문/답변 열람
+  const session = await auth();
+  const viewerId = session?.user?.id;
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const isSecret = (post as { isSecret?: boolean }).isSecret === true;
+  const canView = !isSecret || post.authorId === viewerId || role === "ADMIN";
+  const answer = (post as { answer?: string | null }).answer ?? null;
 
   return (
     <div className="pb-20px">
@@ -75,12 +84,41 @@ export default async function PostDetailPage({
           </div>
         </div>
 
-        {/* 본문 */}
-        <div className="py-16px font-14rg text-font-black leading-relaxed whitespace-pre-line min-h-[120px]">
-          {post.content}
-        </div>
+        {/* 본문 — 비밀 상담글은 작성자·담당 변호사만 열람 */}
+        {canView ? (
+          <>
+            <div className="py-16px font-14rg text-font-black leading-relaxed whitespace-pre-line min-h-[120px]">
+              {post.content}
+            </div>
 
-        {/* 액션 버튼 */}
+            {/* 변호사 답변 (비밀) — 비밀 상담글에만 노출 */}
+            {isSecret && (
+              <div className="mt-4px mb-8px rounded-12px border border-line-gray-20 overflow-hidden">
+                <div className="flex items-center gap-6px px-14px py-10px bg-bg-gray-50">
+                  <svg className="w-4 h-4 text-font-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path d="M12 3v18M7 21h10M12 6l-7 2 3 6a3 3 0 0 1-6 0l3-6M12 6l7 2-3 6a3 3 0 0 0 6 0l-3-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <span className="font-13sb text-font-black">변호사 답변</span>
+                  {answer && post.answeredAt && (
+                    <span className="font-11rg text-font-disabled ml-auto">{relativeTime(new Date(post.answeredAt))}</span>
+                  )}
+                </div>
+                {answer ? (
+                  <p className="px-14px py-12px font-14rg text-font-black leading-relaxed whitespace-pre-line">{answer}</p>
+                ) : (
+                  <p className="px-14px py-16px font-13rg text-font-disabled text-center">담당 변호사가 상담 내용을 검토 중입니다. 답변이 등록되면 여기에 표시됩니다.</p>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="py-44px min-h-[120px] flex flex-col items-center justify-center text-center">
+            <svg className="w-8 h-8 text-font-disabled" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+            <p className="font-15sb text-font-black mt-12px">비밀 상담글입니다</p>
+            <p className="font-13rg text-font-disabled mt-4px">작성자 본인과 담당 변호사만 내용을 볼 수 있어요</p>
+          </div>
+        )}
+
+        {/* 액션 버튼 — 비밀 상담글에는 숨김(비공개) */}
+        {!isSecret && (
         <div className="flex items-center justify-center gap-8px py-12px border-t border-line-gray-20">
           <button className="h-36px px-12px rounded-10px border border-line-gray-20 font-13rg text-font-gray flex items-center gap-4px active-bg">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
@@ -99,9 +137,11 @@ export default async function PostDetailPage({
             신고
           </button>
         </div>
+        )}
       </div>
 
-      {/* 댓글 */}
+      {/* 댓글 — 비밀 상담글은 공개 댓글 없이 변호사 답변으로 대체 */}
+      {!isSecret && (
       <div className="px-15px mt-16px">
         <h2 className="font-15sb text-font-black mb-12px">
           댓글 <span className="text-primary">{post.comments?.length ?? 0}</span>
@@ -126,6 +166,7 @@ export default async function PostDetailPage({
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }

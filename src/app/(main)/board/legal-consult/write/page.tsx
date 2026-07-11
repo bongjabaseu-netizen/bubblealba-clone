@@ -31,6 +31,7 @@ export default function LegalWritePage() {
     const formData = new FormData(e.currentTarget);
     formData.set("board", "legal-consult");
     formData.set("images", JSON.stringify(previews));
+    formData.set("secret", "1"); // 법률상담은 비밀글 — 제목만 공개
     const result = await createPost(formData);
     if (result?.error) { setError(result.error); setLoading(false); }
     else router.push("/board/legal-consult");
@@ -41,6 +42,16 @@ export default function LegalWritePage() {
       <div className="px-15px mt-12px">
         <h2 className="font-16sb text-font-black">⚖️ 법률상담 글쓰기</h2>
         <p className="font-13rg text-font-gray mt-2px">관련 서류 사진을 첨부하면 더 정확한 답변을 받을 수 있어요</p>
+      </div>
+
+      {/* 비밀상담 안내 — 제목만 공개, 본문·답변은 작성자·담당 변호사만 열람 */}
+      <div className="px-15px mt-10px">
+        <div className="flex items-start gap-8px rounded-10px bg-bg-gray-50 px-12px py-10px">
+          <svg className="w-4 h-4 text-font-gray shrink-0 mt-1px" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+          <p className="font-12rg text-font-gray leading-relaxed">
+            <b className="text-font-black">비밀상담</b>으로 등록됩니다. 목록에는 <b className="text-font-black">제목만</b> 노출되고, 본문과 변호사 답변은 <b className="text-font-black">작성자 본인과 담당 변호사만</b> 볼 수 있어요.
+          </p>
+        </div>
       </div>
 
       {error && <div className="px-15px mt-8px"><p className="font-13rg text-warn-red">{error}</p></div>}

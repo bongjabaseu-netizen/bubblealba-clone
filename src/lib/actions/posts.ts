@@ -54,13 +54,49 @@ export async function createPost(formData: FormData) {
   if (!board) return { error: "게시판을 선택해주세요" };
 
   const images = (formData.get("images") as string) || "[]";
+  // 비밀글(법률상담) — 제목만 공개, 본문/답변은 작성자·관리자(변호사)만
+  const isSecret = formData.get("secret") === "1";
 
   const post = await prisma.communityPost.create({
-    data: { title, content, images, authorId: session.user.id, boardId: board.id },
+    data: { title, content, images, authorId: session.user.id, boardId: board.id, isSecret },
   });
 
   revalidatePath("/community");
+  revalidatePath(`/board/${boardSlug}`);
   return { success: true, id: post.id };
+}
+
+/** 변호사(관리자) 상담 목록 — legal-consult 비밀 상담글 전체(본문·답변 포함), 미답변 우선 */
+export async function getAdminConsults() {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (role !== "ADMIN") return null;
+  const board = await prisma.board.findUnique({ where: { slug: "legal-consult" } });
+  if (!board) return [];
+  return prisma.communityPost.findMany({
+    where: { boardId: board.id, isSecret: true },
+    orderBy: [{ answeredAt: { sort: "asc", nulls: "first" } }, { createdAt: "desc" }],
+    include: { author: { select: { nickname: true } } },
+  });
+}
+
+/** 변호사(관리자) 답변 등록/수정 — 비밀 상담글에 대한 답변 */
+export async function answerConsult(postId: string, answer: string) {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (role !== "ADMIN") return { error: "변호사 관리자만 답변할 수 있습니다" };
+  if (!answer || answer.trim().length < 2) return { error: "답변 내용을 입력해주세요" };
+
+  const post = await prisma.communityPost.findUnique({ where: { id: postId } });
+  if (!post) return { error: "상담글을 찾을 수 없습니다" };
+
+  await prisma.communityPost.update({
+    where: { id: postId },
+    data: { answer: answer.trim(), answeredAt: new Date() },
+  });
+  revalidatePath(`/community/detail/${postId}`);
+  revalidatePath("/admin/legal-consult");
+  return { success: true };
 }
 
 export async function deletePost(id: string) {
