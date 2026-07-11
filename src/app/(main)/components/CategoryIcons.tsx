@@ -21,9 +21,8 @@ export function CategoryIcons() {
   const pathname = usePathname();
 
   // 검정 카테고리 스트립을 메인 카테고리 페이지 전체에 통일 노출 (사용자 지시 2026-07-11 "다 바꿔줘")
-  // 구인구직/모든 게시판/운세/커뮤니티/초이스톡. 상세·작성 등 하위 페이지는 제외
+  // 구인구직/모든 게시판/운세/커뮤니티/초이스톡 — 상세·작성 페이지까지 포함(모듈 하나로 일관 노출)
   const SHOW_ON = ["/job", "/board", "/fortune", "/community", "/choicetalk"];
-  if (pathname.includes("/detail") || pathname.includes("/write")) return null;
   if (!SHOW_ON.some((p) => pathname.startsWith(p))) return null;
 
   // 현재 페이지와 같은 카테고리는 제외
