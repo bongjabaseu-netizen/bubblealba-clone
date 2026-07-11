@@ -42,12 +42,13 @@ export default async function AdminPanelLayout({
   const email = session.user?.email ?? undefined;
 
   // 신고 대기 건수 — 관리자 세션일 때만 조회 (30초 캐시, undefined 면 배지 숨김)
-  const isAdmin = (session.user as { role?: string } | undefined)?.role === "ADMIN";
+  const role = (session.user as { role?: string } | undefined)?.role;
+  const isAdmin = role === "ADMIN";
   const pendingReports = isAdmin ? await getPendingReportsCached() : undefined;
 
   return (
     <div className="flex min-h-screen admin-scene text-slate-200">
-      <AdminSidebar nickname={nickname} email={email} pendingReports={pendingReports} />
+      <AdminSidebar nickname={nickname} email={email} pendingReports={pendingReports} role={role} />
       <div className="flex-1 flex flex-col min-w-0">
         <AdminHeader pendingReports={pendingReports} />
         {/* 본문 */}

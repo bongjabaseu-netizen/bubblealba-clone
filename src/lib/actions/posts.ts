@@ -70,7 +70,7 @@ export async function createPost(formData: FormData) {
 export async function getAdminConsults() {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
-  if (role !== "ADMIN") return null;
+  if (role !== "ADMIN" && role !== "LAWYER") return null;
   const board = await prisma.board.findUnique({ where: { slug: "legal-consult" } });
   if (!board) return [];
   return prisma.communityPost.findMany({
@@ -84,7 +84,7 @@ export async function getAdminConsults() {
 export async function answerConsult(postId: string, answer: string) {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
-  if (role !== "ADMIN") return { error: "변호사 관리자만 답변할 수 있습니다" };
+  if (role !== "ADMIN" && role !== "LAWYER") return { error: "변호사 관리자만 답변할 수 있습니다" };
   if (!answer || answer.trim().length < 2) return { error: "답변 내용을 입력해주세요" };
 
   const post = await prisma.communityPost.findUnique({ where: { id: postId } });

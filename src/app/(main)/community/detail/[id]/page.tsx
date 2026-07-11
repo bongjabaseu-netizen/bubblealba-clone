@@ -30,7 +30,7 @@ export default async function PostDetailPage({
   const viewerId = session?.user?.id;
   const role = (session?.user as { role?: string } | undefined)?.role;
   const isSecret = (post as { isSecret?: boolean }).isSecret === true;
-  const canView = !isSecret || post.authorId === viewerId || role === "ADMIN";
+  const canView = !isSecret || post.authorId === viewerId || role === "ADMIN" || role === "LAWYER";
   const answer = (post as { answer?: string | null }).answer ?? null;
 
   return (

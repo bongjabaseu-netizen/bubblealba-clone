@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-11 (기능 — 법률상담 전용 관리자 계정(LAWYER 역할))
+
+- [스키마] `Role` enum에 `LAWYER` 추가 — 법률상담 답변만 하는 전용 관리자
+- [미들웨어] `/admin/*` 접근 제어: ADMIN=전체 / **LAWYER=`/admin/legal-consult`만**(그 외 admin 경로 시도 시 답변 콘솔로 리다이렉트) / 기타=차단
+- [권한] `getAdminConsults`·`answerConsult`·상세 열람권한(canView)에 LAWYER 포함
+- [사이드바] `AdminSidebar`에 role 전달 — LAWYER면 "법률상담 답변" 메뉴만 노출(전체 admin 메뉴 숨김)
+- [계정] 전용 계정 `law` / `law1234`(role=LAWYER) 로컬 생성. **Neon(라이브)은 계정·enum 데이터 별도 시드 필요**(enum은 배포로 반영, 계정은 DB write 승인 필요)
+- [검증] tsc 0, 빌드. playwright — law 로그인→`/admin/legal-consult` 착지, 사이드바 1개 메뉴만, `/admin/users`·`/admin` 시도→답변콘솔로 차단, 상담 10개 답변 가능
+
 ## 2026-07-11 (기능 — 법률상담 비밀글 + 변호사 답변 콘솔)
 
 - [스키마] `CommunityPost`에 `isSecret`(비밀글)·`answer`(변호사 답변)·`answeredAt` 추가. 로컬 db push 완료(배포 시 Neon 자동 반영)

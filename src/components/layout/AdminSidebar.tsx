@@ -87,12 +87,15 @@ type AdminSidebarProps = {
   email?: string;
   /** 신고 대기 건수 — 0/undefined 면 배지 숨김 */
   pendingReports?: number;
+  /** 역할 — LAWYER 면 법률상담 답변 메뉴만 노출 */
+  role?: string;
 };
 
 export function AdminSidebar({
   nickname = "관리자",
   email,
   pendingReports,
+  role,
 }: AdminSidebarProps) {
   const pathname = usePathname();
 
@@ -157,20 +160,26 @@ export function AdminSidebar({
         </div>
       </div>
 
-      {/* 메뉴 */}
+      {/* 메뉴 — LAWYER(법률상담 전용 관리자)는 답변 메뉴만, 그 외 관리자는 전체 */}
       <nav className="flex-1 px-3 py-4 space-y-4 text-[13.5px] overflow-y-auto">
-        {/* 대시보드 (단독) */}
-        {renderItem(DASHBOARD)}
+        {role === "LAWYER" ? (
+          renderItem({ href: "/admin/legal-consult", label: "법률상담 답변", icon: Gavel })
+        ) : (
+          <>
+            {/* 대시보드 (단독) */}
+            {renderItem(DASHBOARD)}
 
-        {/* 섹션 그룹 */}
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
-            <div className="px-3 mb-1.5 text-[10.5px] font-bold tracking-[.18em] text-mute/80">
-              {group.label}
-            </div>
-            <div className="space-y-0.5">{group.items.map(renderItem)}</div>
-          </div>
-        ))}
+            {/* 섹션 그룹 */}
+            {NAV_GROUPS.map((group) => (
+              <div key={group.label}>
+                <div className="px-3 mb-1.5 text-[10.5px] font-bold tracking-[.18em] text-mute/80">
+                  {group.label}
+                </div>
+                <div className="space-y-0.5">{group.items.map(renderItem)}</div>
+              </div>
+            ))}
+          </>
+        )}
       </nav>
 
       {/* 하단: 사이트 보기 링크 + 관리자 프로필 칩 */}

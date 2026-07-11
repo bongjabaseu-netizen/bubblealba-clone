@@ -57,6 +57,7 @@ enum Role {
   USER
   ADVERTISER
   ADMIN
+  LAWYER // 법률상담 전용 관리자 — /admin/legal-consult 답변만 접근
 }
 
 model Account {

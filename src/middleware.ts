@@ -26,15 +26,22 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 관리자 페이지 — ADMIN만
+  // 관리자 페이지 — ADMIN 전체 / LAWYER는 법률상담 답변만
   if (adminPaths.some((p) => pathname.startsWith(p))) {
     if (!token) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
-    if (token.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/", req.url));
+    if (token.role === "ADMIN") {
+      return NextResponse.next();
     }
-    return NextResponse.next();
+    // 법률상담 전용 관리자 — /admin/legal-consult 만 접근, 그 외 admin 경로는 답변 콘솔로 돌림
+    if (token.role === "LAWYER") {
+      if (pathname === "/admin/legal-consult") {
+        return NextResponse.next();
+      }
+      return NextResponse.redirect(new URL("/admin/legal-consult", req.url));
+    }
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   // 광고주 페이지 — ADVERTISER 또는 ADMIN

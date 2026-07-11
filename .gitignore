@@ -58,3 +58,7 @@ prisma/dev.db-journal
 # 디자인 보드 재생성물 (스크립트는 커밋, 캡처·HTML은 재생성물이라 제외)
 /tools/design-board/shots/
 /tools/design-board/design-board.html
+
+# 일회성 시드/계정 스크립트 (로컬·Neon 시드용, 커밋 제외)
+prisma/create-lawyer.ts
+prisma/seed-consults.ts
