@@ -8,13 +8,14 @@ import { Briefcase, Home, Scale, Dog, Scissors, Sparkles, type LucideIcon } from
 
 type Category = { href: string; Icon: LucideIcon; label: string };
 
+// 부동산을 맨 끝(운세 옆)으로 — 6개 항상 노출 (사용자 지시 2026-07-11)
 const ALL_CATEGORIES: Category[] = [
   { href: "/", Icon: Briefcase, label: "구인구직" },
-  { href: "/board/realestate", Icon: Home, label: "부동산" },
   { href: "/board/legal-consult", Icon: Scale, label: "법률상담" },
   { href: "/board/pets", Icon: Dog, label: "애견자랑" },
   { href: "/board/beauty", Icon: Scissors, label: "미용" },
   { href: "/fortune", Icon: Sparkles, label: "운세" },
+  { href: "/board/realestate", Icon: Home, label: "부동산" },
 ];
 
 export function CategoryIcons() {
@@ -25,15 +26,10 @@ export function CategoryIcons() {
   const SHOW_ON = ["/job", "/board", "/fortune", "/community", "/choicetalk"];
   if (!SHOW_ON.some((p) => pathname.startsWith(p))) return null;
 
-  // 현재 페이지와 같은 카테고리는 제외
-  const filtered = ALL_CATEGORIES.filter((c) => {
-    if (c.href === "/") return pathname !== "/";
-    return !pathname.startsWith(c.href);
-  });
-
+  // 6개 카테고리 항상 노출(현재 페이지 제외 안 함) — 부동산 포함 (사용자 지시 2026-07-11)
   return (
     <div className="flex items-center justify-around px-15px py-12px border-b border-line-gray-20">
-      {filtered.map(({ href, Icon, label }) => (
+      {ALL_CATEGORIES.map(({ href, Icon, label }) => (
         <Link
           key={href}
           href={href}
