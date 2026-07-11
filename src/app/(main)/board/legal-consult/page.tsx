@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getBannerAds } from "@/lib/actions/banners";
+import { LegalExperts } from "./LegalExperts";
 
 function relativeTime(date: Date): string {
   const diff = Date.now() - new Date(date).getTime();
@@ -34,6 +35,9 @@ export default async function LegalConsultPage() {
 
   return (
     <>
+      {/* 전문 법무사 쇼케이스 — 1명씩 슬라이딩 + 5명 썸네일 (사용자 지시 2026-07-11) */}
+      <LegalExperts />
+
       {/* 법률사무소 이미지 배너 3x2 */}
       {legalBanners.length > 0 && (
         <div className="px-15px mt-8px space-y-6px">
