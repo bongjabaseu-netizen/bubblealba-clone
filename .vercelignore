@@ -1,0 +1,10 @@
+# Vercel 업로드 제외 — 빌드는 소스에서 새로 수행하므로 로컬 캐시/도구는 불필요
+# from: 배포 시 .next.old-dev turbopack 캐시(250MB)가 100MB 제한 초과 → 업로드 실패 방지
+node_modules
+.next
+.next.old-dev
+out
+tools
+skillsmp-search
+captures
+*.log
