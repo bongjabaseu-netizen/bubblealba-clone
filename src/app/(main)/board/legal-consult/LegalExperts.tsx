@@ -27,51 +27,59 @@ export function LegalExperts() {
   }, [n]);
 
   const go = (d: number) => setActive((a) => (a + d + n) % n);
-  const e = LAWYERS[active];
 
   return (
     <div className="mt-8px">
-      {/* ===== 히어로 (실사 법원 배경 풀블리드 — 청색 그라디언트 제거, 사용자 지시 2026-07-11) ===== */}
+      {/* ===== 히어로 (좌측 슬라이딩 캐러셀 — 인물 우측 고정으로 프로필 안 가림, 사용자 지시 2026-07-11) ===== */}
       <div className="relative overflow-hidden h-[380px] bg-[#0b0e14]">
-        {/* 인물 사진 풀블리드 — 얼굴 크고 선명하게 */}
-        <img
-          key={e.photo}
-          src={e.photo}
-          alt={`${e.name} 변호사`}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-          loading="lazy"
-        />
-        {/* 좌측 텍스트 가독용 다크 스크림 (중립 블랙, 청색 아님) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-transparent" />
+        {/* 슬라이딩 트랙 — active 위치로 좌측 이동 */}
+        <div
+          className="flex h-full transition-transform duration-500 ease-out"
+          style={{ transform: `translateX(-${active * 100}%)` }}
+        >
+          {LAWYERS.map((l, i) => (
+            <div key={l.name} className="relative w-full h-full shrink-0 bg-[#0b0e14]">
+              {/* 인물 사진 — 우측 정렬(object-left = 이미지 좌측을 보여줘 인물이 프레임 우측에 위치) */}
+              <img
+                src={l.photo}
+                alt={`${l.name} 변호사`}
+                className="absolute inset-0 w-full h-full object-cover object-left-top"
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+              {/* 좌측 텍스트 가독용 다크 스크림 (인물이 우측이라 좌측을 더 강하게) */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
 
-        {/* 텍스트 (좌측) */}
-        <div className="relative z-10 h-full flex flex-col justify-center px-18px">
-          <div className="flex items-center gap-6px mb-12px">
-            <span className="font-11rg tracking-wide text-white/65">당당하게 보여드리는 {FIRM}의 자신감</span>
-            <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded bg-white/15 font-10rg text-white tabular-nums">{active + 1}</span>
-          </div>
+              {/* 텍스트 (좌측) */}
+              <div className="relative z-10 h-full flex flex-col justify-center px-18px">
+                <div className="flex items-center gap-6px mb-12px">
+                  <span className="font-11rg tracking-wide text-white/65">당당하게 보여드리는 {FIRM}의 자신감</span>
+                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded bg-white/15 font-10rg text-white tabular-nums">{i + 1}</span>
+                </div>
 
-          <h2 className="text-[23px] font-extrabold leading-[1.25] text-white tracking-tight">
-            20년 경력 법무법인의
-            <br />
-            <span className="text-[#5b8cff]">탄탄한 변호사 구성</span>
-          </h2>
+                <h2 className="text-[23px] font-extrabold leading-[1.25] text-white tracking-tight">
+                  20년 경력 법무법인의
+                  <br />
+                  <span className="text-[#5b8cff]">탄탄한 변호사 구성</span>
+                </h2>
 
-          <div className="mt-16px max-w-[215px]">
-            <div className="text-[#5b8cff] text-[26px] leading-none font-bold">&ldquo;</div>
-            <p className="font-14rg text-white/85 mt-1px">{e.quote}</p>
-            <div className="text-[#5b8cff] text-[26px] leading-none font-bold text-right -mt-1px">&rdquo;</div>
-            <p className="mt-8px">
-              <span className="text-[18px] font-bold text-white">{e.name}</span>
-              <span className="font-13rg text-white/70 ml-4px">변호사</span>
-            </p>
-            {/* 프로필 (샘플) — 전문분야 배지 + 경력 + 학력/이력 */}
-            <div className="mt-6px flex items-center gap-5px">
-              <span className="inline-flex items-center h-[19px] px-6px rounded-full bg-[#5b8cff]/15 text-[#8fb4ff] font-11rg font-semibold">{e.field}</span>
-              <span className="font-11rg text-white/60">{e.exp}</span>
+                <div className="mt-16px max-w-[210px]">
+                  <div className="text-[#5b8cff] text-[26px] leading-none font-bold">&ldquo;</div>
+                  <p className="font-14rg text-white/85 mt-1px">{l.quote}</p>
+                  <div className="text-[#5b8cff] text-[26px] leading-none font-bold text-right -mt-1px">&rdquo;</div>
+                  <p className="mt-8px">
+                    <span className="text-[18px] font-bold text-white">{l.name}</span>
+                    <span className="font-13rg text-white/70 ml-4px">변호사</span>
+                  </p>
+                  {/* 프로필 (샘플) — 전문분야 배지 + 경력 + 학력/이력 */}
+                  <div className="mt-6px flex items-center gap-5px">
+                    <span className="inline-flex items-center h-[19px] px-6px rounded-full bg-[#5b8cff]/15 text-[#8fb4ff] font-11rg font-semibold">{l.field}</span>
+                    <span className="font-11rg text-white/60">{l.exp}</span>
+                  </div>
+                  <p className="mt-4px font-11rg text-white/55 leading-[1.4]">{l.career}</p>
+                </div>
+              </div>
             </div>
-            <p className="mt-4px font-11rg text-white/50 leading-[1.4]">{e.career}</p>
-          </div>
+          ))}
         </div>
       </div>
 
