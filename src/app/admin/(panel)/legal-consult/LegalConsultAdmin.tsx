@@ -23,8 +23,20 @@ export function LegalConsultAdmin({ consults }: { consults: Consult[] }) {
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "answered">("all");
 
+  const total = consults.length;
   const pending = consults.filter((c) => !c.answer).length;
+  const answered = total - pending;
+  // 오늘 접수된 신규 상담 수
+  const todayNew = consults.filter((c) => {
+    const d = new Date(c.createdAt);
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  }).length;
+  const shown = consults.filter((c) =>
+    filter === "all" ? true : filter === "pending" ? !c.answer : !!c.answer
+  );
 
   const save = (id: string, current: string | null) => {
     const text = (drafts[id] ?? current ?? "").trim();
@@ -48,24 +60,63 @@ export function LegalConsultAdmin({ consults }: { consults: Consult[] }) {
       <div>
         <div className="flex items-center gap-2">
           <Scale className="w-5 h-5 text-brand" />
-          <h1 className="text-lg font-bold text-slate-100">법률상담 답변</h1>
-          <span className="ml-1 text-xs text-mute">
-            미답변 <b className="text-amber-400">{pending}</b> / 전체 {consults.length}
-          </span>
+          <h1 className="text-lg font-bold text-slate-100">법률상담 답변 관리</h1>
+          {todayNew > 0 && (
+            <span className="ml-1 inline-flex items-center rounded-full bg-brand/15 px-2 py-0.5 text-[11px] font-semibold text-brand">
+              오늘 신규 {todayNew}
+            </span>
+          )}
         </div>
         <p className="mt-1 text-xs text-mute">
-          비밀 상담글의 본문을 열람하고 답변을 등록합니다. 본문·답변은 작성자 본인에게만 비밀로 표시됩니다.
+          들어온 상담에 답변을 답니다. 아래 카드로 답변 대기·완료 현황을 확인하고, 카드를 눌러 목록을 걸러 볼 수 있어요.
         </p>
+      </div>
+
+      {/* 통계 카드 — 클릭 시 목록 필터 */}
+      <div className="grid grid-cols-3 gap-3">
+        {([
+          { key: "pending", label: "답변 대기", value: pending, color: "text-amber-400" },
+          { key: "answered", label: "답변 완료", value: answered, color: "text-emerald-400" },
+          { key: "all", label: "전체 상담", value: total, color: "text-slate-100" },
+        ] as const).map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            onClick={() => setFilter(s.key)}
+            className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+              filter === s.key
+                ? "border-brand/60 bg-brand/10"
+                : "border-line bg-navy-900/60 hover:bg-navy-800/60"
+            }`}
+          >
+            <div className={`text-2xl font-bold tabular-nums ${s.color}`}>{s.value}</div>
+            <div className="mt-0.5 text-xs text-mute">{s.label}</div>
+          </button>
+        ))}
       </div>
 
       {error && <p className="text-xs text-rose-400">{error}</p>}
 
-      {consults.length === 0 && (
-        <p className="py-16 text-center text-sm text-mute">등록된 상담글이 없습니다.</p>
+      {/* 필터 상태 안내 */}
+      <div className="flex items-center gap-2 text-xs text-mute">
+        <span>
+          {filter === "pending" ? "답변 대기" : filter === "answered" ? "답변 완료" : "전체"} {shown.length}건
+        </span>
+        {filter !== "all" && (
+          <button type="button" onClick={() => setFilter("all")} className="text-brand hover:underline">
+            전체 보기
+          </button>
+        )}
+      </div>
+
+      {shown.length === 0 && (
+        <p className="py-16 text-center text-sm text-mute">
+          {total === 0 ? "등록된 상담글이 없습니다." : "해당 조건의 상담이 없습니다."}
+        </p>
       )}
 
       <div className="space-y-3">
-        {consults.map((c) => {
+        {shown.map((c) => {
           const answered = !!c.answer;
           return (
             <div key={c.id} className="overflow-hidden rounded-xl border border-line bg-navy-900/60">
