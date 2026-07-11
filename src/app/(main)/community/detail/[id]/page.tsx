@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost } from "@/lib/actions/posts";
 import { auth } from "@/auth";
+import { displayPostAuthor, displayCommentAuthor } from "@/lib/luxuryAlias";
 import { CommentForm } from "./comment-form";
 
 function relativeTime(date: Date): string {
@@ -61,10 +62,10 @@ export default async function PostDetailPage({
         <div className="flex items-center justify-between pb-12px border-b border-line-gray-20">
           <div className="flex items-center gap-8px">
             <div className="w-8 h-8 rounded-full bg-bg-gray-50 flex items-center justify-center font-13sb text-font-gray">
-              {(post.author?.nickname ?? "?")[0]}
+              {displayPostAuthor(post.author)[0]}
             </div>
             <div>
-              <div className="font-14sb text-font-black">{post.author?.nickname ?? "익명"}</div>
+              <div className="font-14sb text-font-black">{displayPostAuthor(post.author)}</div>
               <div className="font-11rg text-font-disabled">활동중</div>
             </div>
           </div>
@@ -153,11 +154,11 @@ export default async function PostDetailPage({
           {post.comments?.map((c) => (
             <div key={c.id} className="flex items-start gap-10px py-12px border-b border-line-gray-20 last:border-0">
               <div className="w-8 h-8 rounded-full bg-bg-gray-50 flex items-center justify-center font-13sb text-font-gray shrink-0">
-                {(c.author?.nickname ?? "?")[0]}
+                {displayCommentAuthor(c.author)[0]}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-6px mb-4px">
-                  <span className="font-14sb text-font-black">{c.author?.nickname ?? "익명"}</span>
+                  <span className="font-14sb text-font-black">{displayCommentAuthor(c.author)}</span>
                   <span className="font-12rg text-font-disabled">{relativeTime(new Date(c.createdAt))}</span>
                 </div>
                 <p className="font-14rg text-font-black">{c.content}</p>

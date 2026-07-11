@@ -20,8 +20,10 @@ const ALL_CATEGORIES: Category[] = [
 export function CategoryIcons() {
   const pathname = usePathname();
 
-  // 카테고리 바로가기는 지정 페이지에서만 노출(화이트리스트) — 부동산/애견/법률 게시판 + 운세 (사용자 지시 2026-07-10)
-  const SHOW_ON = ["/board/realestate", "/board/pets", "/board/legal-consult", "/fortune"];
+  // 검정 카테고리 스트립을 메인 카테고리 페이지 전체에 통일 노출 (사용자 지시 2026-07-11 "다 바꿔줘")
+  // 구인구직/모든 게시판/운세/커뮤니티/초이스톡. 상세·작성 등 하위 페이지는 제외
+  const SHOW_ON = ["/job", "/board", "/fortune", "/community", "/choicetalk"];
+  if (pathname.includes("/detail") || pathname.includes("/write")) return null;
   if (!SHOW_ON.some((p) => pathname.startsWith(p))) return null;
 
   // 현재 페이지와 같은 카테고리는 제외

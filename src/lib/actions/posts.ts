@@ -14,7 +14,7 @@ export async function getPosts(boardSlug?: string) {
     where,
     orderBy: [{ pinned: "desc" }, { createdAt: "desc" }], // 고정 공지 최상단
     include: {
-      author: { select: { nickname: true, image: true } },
+      author: { select: { nickname: true, image: true, anonNo: true } },
       board: { select: { name: true, slug: true } },
       _count: { select: { comments: true, scraps: true } },
     },
@@ -25,10 +25,10 @@ export async function getPost(id: string) {
   const post = await prisma.communityPost.findUnique({
     where: { id },
     include: {
-      author: { select: { nickname: true, image: true } },
+      author: { select: { nickname: true, image: true, anonNo: true } },
       board: { select: { name: true, slug: true } },
       comments: {
-        include: { author: { select: { nickname: true, image: true } } },
+        include: { author: { select: { nickname: true, image: true, anonNo: true } } },
         orderBy: { createdAt: "asc" },
       },
       _count: { select: { scraps: true } },

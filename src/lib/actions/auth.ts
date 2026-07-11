@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcryptjs";
 import { signIn as nextAuthSignIn } from "@/auth";
+import { aliasNick } from "@/lib/luxuryAlias";
 
 export async function register(formData: FormData) {
   const email = formData.get("email") as string;
@@ -18,12 +19,13 @@ export async function register(formData: FormData) {
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) return { error: "이미 사용 중인 아이디입니다" };
 
-  const nickExists = await prisma.user.findUnique({ where: { nickname } });
-  if (nickExists) return { error: "이미 사용 중인 닉네임입니다" };
-
   const hashed = await hash(password, 10);
+  // 명품 익명 닉네임 — 가입순 고정 번호 부여, 닉네임=브랜드+번호(샤넬1). 입력 닉네임은 익명성 위해 미사용
+  const maxNo = (await prisma.user.aggregate({ _max: { anonNo: true } }))._max.anonNo ?? 0;
+  const anonNo = maxNo + 1;
+  const alias = aliasNick(anonNo);
   await prisma.user.create({
-    data: { email, password: hashed, nickname, name: nickname },
+    data: { email, password: hashed, nickname: alias, name: alias, anonNo },
   });
 
   return { success: true };

@@ -63,3 +63,4 @@ prisma/dev.db-journal
 prisma/create-lawyer.ts
 prisma/seed-consults.ts
 prisma/seed-neon.ts
+prisma/backfill-anon.ts

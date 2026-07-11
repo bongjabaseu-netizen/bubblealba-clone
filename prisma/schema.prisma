@@ -21,6 +21,7 @@ model User {
   password      String?   // bcrypt 해시 (credentials 로그인용)
 
   nickname      String?   @unique
+  anonNo        Int?      @unique // 명품 익명 번호(가입순) — 닉네임/방장/댓글 표시 파생
   phone         String?
   phoneVerified Boolean   @default(false)
   isAdult       Boolean   @default(false)

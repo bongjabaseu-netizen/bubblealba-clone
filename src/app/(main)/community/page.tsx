@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Eye, Heart, MessageSquare, Edit3, Check, Info, ChevronDown } from "lucide-react";
 import { getPosts } from "@/lib/actions/posts";
+import { displayPostAuthor } from "@/lib/luxuryAlias";
 
 type CommunityPostItem = Awaited<ReturnType<typeof getPosts>>[number];
 
@@ -137,9 +138,9 @@ function PostItem({ post, notice }: { post: CommunityPostItem; notice?: boolean 
         <div className="flex items-center justify-between mt-8px">
           <div className="flex items-center gap-5px">
             <div className="w-5 h-5 rounded-full bg-bg-gray-50 flex items-center justify-center font-10rg text-font-gray">
-              {(post.author?.nickname ?? "?")[0]}
+              {displayPostAuthor(post.author)[0]}
             </div>
-            <span className="font-12rg text-font-disabled">{post.author?.nickname ?? "익명"}</span>
+            <span className="font-12rg text-font-disabled">{displayPostAuthor(post.author)}</span>
           </div>
           <div className="flex items-center gap-10px font-12rg text-font-disabled">
             <span className="flex items-center gap-3px"><Eye className="w-3 h-3" /> {(post.views ?? 0).toLocaleString()}</span>
