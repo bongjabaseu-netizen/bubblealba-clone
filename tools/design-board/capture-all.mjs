@@ -2,7 +2,7 @@
  * fixed 요소(하단 탭 등)가 제 위치에 찍히도록: 뷰포트 높이를 문서 전체 높이로 늘려 non-fullPage 캡처.
  * 같은 상태에서 요소지도도 추출 → 스크린샷과 좌표 완전 일치 */
 import { chromium } from "file:///D:/debug/captures/bubblealba/.work/node_modules/playwright/index.mjs";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -138,6 +138,14 @@ for (const [section, label, path] of PAGES) {
   }
 }
 
-writeFileSync(join(OUT, "manifest.json"), JSON.stringify(manifest, null, 2));
+// 병합 저장 — 기존 manifest에서 PAGES 밖 화면(recap-one으로 추가된 34+)은 보존 (덮어쓰기로 인한 유실 방지)
+let merged = manifest;
+try {
+  const prev = JSON.parse(readFileSync(join(OUT, "manifest.json"), "utf8"));
+  const nums = new Set(manifest.map((m) => m.num));
+  const kept = prev.filter((m) => !nums.has(m.num)); // 이번에 안 찍은 것 보존
+  merged = [...manifest, ...kept].sort((a, b) => +a.num - +b.num);
+} catch { /* 기존 manifest 없으면 그대로 */ }
+writeFileSync(join(OUT, "manifest.json"), JSON.stringify(merged, null, 2));
 await browser.close();
-console.log("DONE", manifest.filter((m) => m.file).length + "/" + PAGES.length);
+console.log("DONE", manifest.filter((m) => m.file).length + "/" + PAGES.length, "| 병합 후 총", merged.length, "화면");
