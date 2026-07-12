@@ -140,7 +140,7 @@ const html = `<title>명품알바 전 화면 디자인 보드</title>
   @media (prefers-reduced-motion: no-preference){ .card{transition:border-color .15s, transform .15s} .card:hover{transform:translateY(-2px)} }
 </style>
 <header class="top">
-  <h1>명품알바 — 전 화면 디자인 보드 <span style="color:var(--sub);font-weight:500;font-size:13px">2026-07-08 기준 · 33화면 · 요소 인식</span></h1>
+  <h1>명품알바 — 전 화면 디자인 보드 <span style="color:var(--sub);font-weight:500;font-size:13px">${new Date().toISOString().slice(0,10)} 기준 · ${manifest.length}화면 · 요소 인식</span></h1>
   <p class="hint">① 카드를 클릭해 화면을 크게 연다 → ② 마우스를 올리면 <b>실제 요소(배너·버튼·표 등)에 테두리와 이름</b>이 표시된다 → ③ 클릭하면 그 요소가 핀으로 선택됨 (메모는 선택) → ④ 하단 <b>"지시문 복사"</b> → 채팅창에 붙여넣기. 어떤 요소를 골랐는지 자동으로 담기므로 제가 코드에서 정확히 그 부분을 찾습니다.</p>
 </header>
 <nav class="jump">${nav}</nav>
