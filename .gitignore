@@ -65,3 +65,5 @@ prisma/seed-consults.ts
 prisma/seed-neon.ts
 prisma/backfill-anon.ts
 prisma/seed-realestate.ts
+prisma/_*.ts
+prisma/_*.json
